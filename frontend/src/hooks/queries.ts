@@ -1,6 +1,6 @@
 ﻿import { useQuery } from "@tanstack/react-query";
 import {
-  aiApi, captureApi, defenderApi, flockionApi, intelApi, malwareApi, firewallApi, networkApi, processApi, quarantineApi, systemApi, threatApi,
+  aiApi, captureApi, defenderApi, flockionApi, guardApi, intelApi, malwareApi, firewallApi, networkApi, processApi, quarantineApi, systemApi, threatApi,
 } from "../api/endpoints";
 
 const LIVE = 2000;
@@ -85,3 +85,6 @@ export const useIpIntel = (ips: string[]) => {
     select: (batch) => new Map(batch.results.map((intel) => [intel.ip, intel])),
   });
 };
+
+/** Polls fast: a guard alert must reach the screen within seconds. */
+export const useGuard = () => useQuery({ queryKey: ["guard"], queryFn: guardApi.status, refetchInterval: 2000 });

@@ -34,6 +34,9 @@ connector can review the findings for you.
   published command-line patterns, loaders in source code, remote-access tools. Rules are plain JSON.
 - **Respond safely:** kill process trees, quarantine files (restorable, with SHA-256), block IPs or programs in the
   firewall, remove autostart entries (with backup). Critical Windows processes are protected.
+- **Install guard:** clone a repo and run `npm i`? If an install script contacts a server that is not a known
+  registry, a **siren** sounds on your PC and the whole install is **frozen** (and the server blocked) before it
+  can finish. An optional **lockdown** allow-list does the same to any program you have not trusted.
 - **Malware scan:** hashes running and autostart programs (and optionally files in Downloads, Desktop, Temp) and
   checks them against your own known-bad list and **VirusTotal** (hash only, files are never uploaded), with one-click
   Defender scans. It complements, and does not replace, your antivirus.
@@ -50,6 +53,7 @@ connector can review the findings for you.
 | --- | --- |
 | ![Findings](docs/screenshots/findings.png) | ![Connections](docs/screenshots/connections.png) |
 | ![AI analysis](docs/screenshots/ai.png) | ![Malware scan](docs/screenshots/malware.png) |
+| ![Install guard](docs/screenshots/guard.png) | ![Guard alarm banner](docs/screenshots/guard-alarm.png) |
 
 More screens and a tab-by-tab tour are in the **[User guide](docs/USER_GUIDE.md)**. The screenshots use demo mode
 (fictional data, documentation-range IP addresses).

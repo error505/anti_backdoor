@@ -12,13 +12,14 @@ addresses (`203.0.113.x`, `198.51.100.x`) and a made-up user.
 5. [Traffic and payloads](#traffic-and-payloads)
 6. [Autostart](#autostart)
 7. [Activity](#activity)
-8. [Malware scan](#malware-scan)
-9. [AI analysis and AI Watch](#ai-analysis-and-ai-watch)
-10. [Reports and cloud upload](#reports-and-cloud-upload)
-11. [Flockion](#flockion)
-12. [Response tools](#response-tools)
-13. [Where data is stored](#where-data-is-stored)
-14. [Troubleshooting](#troubleshooting)
+8. [Install guard](#install-guard)
+9. [Malware scan](#malware-scan)
+10. [AI analysis and AI Watch](#ai-analysis-and-ai-watch)
+11. [Reports and cloud upload](#reports-and-cloud-upload)
+12. [Flockion](#flockion)
+13. [Response tools](#response-tools)
+14. [Where data is stored](#where-data-is-stored)
+15. [Troubleshooting](#troubleshooting)
 
 Navigation is a grouped sidebar (**Monitor**, **Respond**, **Intelligence**). On narrow windows it wraps into rows,
 so there is never a horizontal scrollbar. Any tab can be opened directly with `?tab=findings`, `?tab=malware`, etc.
@@ -93,6 +94,44 @@ entries are hidden by default. **Remove autostart** backs the entry up first.
 
 Timeline of process starts, internet connections, new listening ports, new autostart entries and your own actions,
 also written to `backend/data/logs/activity-YYYYMMDD.jsonl` as evidence.
+
+## Install guard
+
+![Install guard](screenshots/guard.png)
+
+The attack this tool was built for starts when you clone a repo and run `npm i`, `yarn` or `npm start`: a hidden
+install script fetches malware and sends your data out. The guard watches for exactly that.
+
+![Guard alarm](screenshots/guard-alarm.png)
+
+**Install watch** (on by default, mode *Alert and stop it*). It recognises package-manager runs (npm, yarn, pnpm,
+bun, pip) and everything they start. While an **install** runs, any child process that contacts a server outside the
+allowed hosts is a leak. The guard then:
+
+1. plays a **siren** on the PC's speakers (even if the dashboard tab is hidden) and shows a red banner on every tab;
+2. **freezes** the whole install tree (suspended, not killed, so you can look first and nothing is lost);
+3. adds a firewall block for that server (needs administrator).
+
+Then you choose: **Kill tree**, **Block IP**, **Resume (false alarm)**, **Allow this server** (adds it to the allowed
+hosts and resumes), or **Acknowledge**. While a project is only **running** (`npm start`, `npx`, dev servers) just
+known attacker ports count, because those programs legitimately talk to many hosts (for example an MCP server started
+with `npx`). A child that outlives the install is still remembered and watched after npm exits.
+
+**Allowed hosts.** Registries and common download hosts (npmjs, GitHub, nodejs.org, PyPI, Microsoft...) are built in.
+Add your private registry or CDN under *Servers install scripts may contact*. A host name covers its sub-domains.
+
+**Lockdown** (off by default). Only these may send data to the internet: Microsoft-signed software, publishers you
+trust, and programs you pin. A pinned program stores the file's SHA-256, so replacing the file revokes the trust. Any
+other program is alerted on (*Alert only*) or frozen and firewall-blocked (*Alert and stop it*) the moment it connects.
+**Start with Alert only**, press *Trust program* or *Trust publisher* for what you use (the list *Using the internet but
+not trusted yet* shows them), then switch to freezing. Turning it on with nothing trusted would freeze your browser.
+
+**Limits, honestly.** The guard checks every 2 seconds, so the first moments of a connection can get through: it
+limits the damage, it does not make theft impossible. It sees addresses and program names, not encrypted content. It
+cannot stop code running inside an already trusted program, and it does not replace reading a repo before running it.
+Programs whose signature cannot be read yet are skipped until it can. Containing a false alarm can interrupt a
+legitimate install: press *Resume*. The siren plays on the PC running the monitor. Alerts show for the current session;
+the permanent record is the Activity log (entries start with `GUARD:`).
 
 ## Malware scan
 
@@ -221,6 +260,7 @@ when Defender is the active antivirus and Tamper Protection allows it.
 | `backend/data/quarantine/` | Quarantined files (no extension) and manifests with SHA-256 |
 | `backend/data/backups/` | Backups of removed autostart entries |
 | `backend/data/ai_settings.json`, `flockion_settings.json`, `intel_settings.json` | Provider choices and DPAPI-encrypted keys |
+| `backend/data/guard_config.json` | Guard modes, trusted programs and publishers, extra allowed hosts |
 | `backend/data/ip_intel_settings.json`, `ip_intel_cache.json` | IP-intelligence opt-in and cached owner lookups |
 | `backend/data/known_bad_hashes.txt`, `virustotal_cache.json` | Your known-bad hash list; cached VirusTotal answers |
 | `backend/data/ai_schedule.json`, `ai_history.jsonl` | AI Watch schedule and the last 50 analyses |

@@ -3,6 +3,7 @@
 import time
 from typing import TYPE_CHECKING
 
+from backdoor_watch.demo.demo_guard import DEMO_MODES, demo_guard_alerts
 from backdoor_watch.demo.demo_findings import demo_findings, demo_persistence
 from backdoor_watch.demo.demo_processes import C2_IP, DEMO_OWN_PIDS, USER, demo_connections, demo_processes
 from backdoor_watch.domain.malware import MalwareHit, MalwareScanStatus, ScanScope, ThreatVerdict
@@ -102,6 +103,9 @@ def seed_demo(services: "AppServices") -> None:
     )
     _seed_traffic(services, connections)
     services.ip_intel.set_enabled(True)
+    services.guard.set_modes(*DEMO_MODES)
+    services.guard.trust_publisher("Slack Technologies")
+    services.guard.load_alerts(demo_guard_alerts())
     services.events.extend(_events())
     services.analysis_archive.store(AiAnalysis(
         provider=AiProvider.ANTHROPIC, model="claude-opus-5-5", effort="high", question=None,

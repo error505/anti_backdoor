@@ -49,6 +49,29 @@ class ProcessController:
     def resume(self, pid: int) -> None:
         self._run(self._allowed_process(pid).resume)
 
+    def suspend_tree(self, pid: int) -> list[int]:
+        """Freezes the process and everything it started. Critical Windows processes in the tree are skipped."""
+        root = self._allowed_process(pid)
+        frozen = []
+        for target in [root, *root.children(recursive=True)]:
+            try:
+                self._policy.ensure_allowed(target)
+                self._run(target.suspend)
+                frozen.append(target.pid)
+            except ActionRefusedError:
+                continue
+        return frozen
+
+    def resume_pids(self, pids: list[int]) -> list[int]:
+        resumed = []
+        for pid in pids:
+            try:
+                self.resume(pid)
+                resumed.append(pid)
+            except (NotFoundError, ActionRefusedError):
+                continue
+        return resumed
+
     def executable(self, pid: int) -> str:
         process = self._get(pid)
         try:

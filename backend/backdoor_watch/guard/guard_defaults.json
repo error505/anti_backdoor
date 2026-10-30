@@ -1,0 +1,148 @@
+{
+  "_comment": "Package managers whose child processes are watched. 'install' verbs run third-party lifecycle scripts (preinstall/postinstall), so any unknown outbound connection is a leak. 'run' verbs start long-lived programs (dev servers, npx tools such as MCP servers) that legitimately talk to many hosts, so only known attacker ports count. '*' matches any verb. bare_is_install: the tool with no verb installs (yarn).",
+  "tools": [
+    {
+      "names": [
+        "npm-cli.js",
+        "npm.cmd",
+        "npm"
+      ],
+      "install": [
+        "install",
+        "i",
+        "ci",
+        "add",
+        "update",
+        "rebuild",
+        "install-test",
+        "it"
+      ],
+      "run": [
+        "run",
+        "run-script",
+        "start",
+        "test",
+        "dev",
+        "exec",
+        "x",
+        "init",
+        "create"
+      ],
+      "label": "npm"
+    },
+    {
+      "names": [
+        "npx-cli.js",
+        "npx.cmd",
+        "npx"
+      ],
+      "install": [],
+      "run": [
+        "*"
+      ],
+      "label": "npx"
+    },
+    {
+      "names": [
+        "yarn.js",
+        "yarn.cjs",
+        "yarn.cmd",
+        "yarn"
+      ],
+      "install": [
+        "install",
+        "add",
+        "upgrade",
+        "up"
+      ],
+      "run": [
+        "run",
+        "start",
+        "test",
+        "dev",
+        "dlx",
+        "create"
+      ],
+      "bare_is_install": true,
+      "label": "yarn"
+    },
+    {
+      "names": [
+        "pnpm.cjs",
+        "pnpm.js",
+        "pnpm.cmd",
+        "pnpm.exe",
+        "pnpm"
+      ],
+      "install": [
+        "install",
+        "i",
+        "add",
+        "update",
+        "up",
+        "rebuild"
+      ],
+      "run": [
+        "run",
+        "start",
+        "test",
+        "dev",
+        "dlx",
+        "exec",
+        "create"
+      ],
+      "label": "pnpm"
+    },
+    {
+      "names": [
+        "bun.exe",
+        "bun",
+        "bunx"
+      ],
+      "install": [
+        "install",
+        "i",
+        "add",
+        "update"
+      ],
+      "run": [
+        "run",
+        "start",
+        "test",
+        "dev",
+        "x",
+        "create"
+      ],
+      "label": "bun"
+    },
+    {
+      "names": [
+        "pip.exe",
+        "pip3.exe",
+        "pip"
+      ],
+      "install": [
+        "install"
+      ],
+      "run": [],
+      "label": "pip"
+    }
+  ],
+  "allowed_host_suffixes": [
+    "npmjs.org",
+    "npmjs.com",
+    "yarnpkg.com",
+    "github.com",
+    "githubusercontent.com",
+    "githubassets.com",
+    "nodejs.org",
+    "pypi.org",
+    "pythonhosted.org",
+    "microsoft.com",
+    "windowsupdate.com",
+    "visualstudio.com",
+    "cloudflare-dns.com",
+    "jsdelivr.net",
+    "unpkg.com"
+  ]
+}

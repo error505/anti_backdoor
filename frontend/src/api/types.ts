@@ -369,3 +369,56 @@ export interface IpIntelSettings {
   provider: string;
   cached_addresses: number;
 }
+
+export type GuardMode = "off" | "alert" | "contain";
+
+export interface TrustEntry {
+  id: string;
+  kind: "publisher" | "program";
+  value: string;
+  sha256: string | null;
+  added_at: number;
+}
+
+export interface GuardConfig {
+  install_watch: GuardMode;
+  lockdown: GuardMode;
+  sound: boolean;
+  trusted: TrustEntry[];
+  allowed_hosts: string[];
+}
+
+export interface GuardAlert {
+  id: string;
+  created_at: number;
+  kind: "install_leak" | "untrusted_outbound";
+  title: string;
+  pid: number;
+  process_name: string;
+  exe: string | null;
+  chain: string[];
+  remote_ip: string;
+  remote_port: number | null;
+  remote_host: string | null;
+  action: "suspended" | "alerted";
+  detail: string;
+  contained_pids: number[];
+  acknowledged: boolean;
+}
+
+export interface SeenProgram {
+  name: string;
+  exe: string | null;
+  signer: string | null;
+  validly_signed: boolean;
+  connections: number;
+  remotes: string[];
+}
+
+export interface GuardStatus {
+  config: GuardConfig;
+  default_allowed_hosts: string[];
+  alerts: GuardAlert[];
+  unacknowledged: number;
+  seen_programs: SeenProgram[];
+}

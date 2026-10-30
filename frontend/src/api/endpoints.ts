@@ -1,7 +1,7 @@
 ﻿import { downloadFile, http } from "./client";
 import type {
   ActionResult, ActivityEvent, AiAnalysis, AiProvider, AiProviderOptions, AiScheduleConfig, AiScheduleState, AiSettings, CaptureRecord, CaptureStatus, Connection,
-  ContextPreview, DefenderOverview, IpIntelBatch, IpIntelSettings, DefenderScanType, Finding, FirewallRule, FlockionCheck, FlockionMode, FlockionResult,
+  ContextPreview, DefenderOverview, GuardConfig, GuardMode, GuardStatus, IpIntelBatch, IpIntelSettings, DefenderScanType, Finding, FirewallRule, FlockionCheck, FlockionMode, FlockionResult,
   FlockionSettings, IntelSettings, MalwareScanStatus, ScanScope, PersistenceEntry, ProcessDetail,
   ProcessInfo, QuarantineItem, ReportFormat, SourceHit, SystemStatus, TrafficSummary, UploadMethod,
 } from "./types";
@@ -115,4 +115,19 @@ export const intelApi = {
   saveSettings: (enabled: boolean) => http.post<IpIntelSettings>("/api/intel/settings", { enabled }),
   lookup: (ips: string[]) =>
     http.get<IpIntelBatch>(`/api/intel/ips?${ips.map((ip) => `ip=${encodeURIComponent(ip)}`).join("&")}`),
+};
+
+export const guardApi = {
+  status: () => http.get<GuardStatus>("/api/guard"),
+  setModes: (modes: { install_watch: GuardMode; lockdown: GuardMode; sound: boolean }) =>
+    http.post<GuardConfig>("/api/guard/modes", modes),
+  trustProgram: (value: string) => http.post<GuardConfig>("/api/guard/trust-program", { value }),
+  trustPublisher: (value: string) => http.post<GuardConfig>("/api/guard/trust-publisher", { value }),
+  trustSignedSeen: () => http.post<ActionResult>("/api/guard/trust-signed-seen"),
+  untrust: (id: string) => http.post<GuardConfig>("/api/guard/untrust", { value: id }),
+  allowHost: (host: string) => http.post<GuardConfig>("/api/guard/allow-host", { host }),
+  disallowHost: (host: string) => http.post<GuardConfig>("/api/guard/disallow-host", { host }),
+  acknowledge: (alertId: string | null) => http.post<ActionResult>("/api/guard/acknowledge", { alert_id: alertId }),
+  resume: (alertId: string) => http.post<ActionResult>(`/api/guard/alerts/${alertId}/resume`),
+  testAlarm: () => http.post<ActionResult>("/api/guard/test-alarm"),
 };

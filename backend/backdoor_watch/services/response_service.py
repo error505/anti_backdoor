@@ -36,6 +36,22 @@ class ResponseService:
         self._processes.resume(pid)
         return self._audit(f"Resumed {self._process_name(pid)} (PID {pid})", pid=pid)
 
+    def suspend_tree(self, pid: int) -> list[int]:
+        frozen = self._processes.suspend_tree(pid)
+        self._audit(f"Suspended {self._process_name(pid)} and its children (PIDs {', '.join(map(str, frozen))})", pid=pid)
+        return frozen
+
+    def resume_processes(self, pids: list[int]) -> str:
+        resumed = self._processes.resume_pids(pids)
+        return self._audit(f"Resumed PIDs {', '.join(map(str, resumed)) or 'none (already gone)'}")
+
+    def unblock_program(self, path: str) -> int:
+        """Removes this tool's firewall blocks for a program the user has just decided to trust."""
+        rules = [r for r in self._firewall.list_rules() if r.target.lower() == path.lower()]
+        for rule in rules:
+            self._firewall.remove_rule(rule.id)
+        return len(rules)
+
     def quarantine_path(self, path: str, reason: str) -> str:
         item = self._vault.quarantine(path, reason)
         return self._audit(f"Quarantined {item.original_path}", sha256=item.sha256 or "", item_id=item.id)

@@ -36,6 +36,14 @@ from backdoor_watch.malware.intel_settings import IntelSettingsStore
 from backdoor_watch.malware.scanner import MalwareScanner
 from backdoor_watch.demo.demo_ip_intel import DemoIpProvider
 from backdoor_watch.flockion.client import FlockionClient
+from backdoor_watch.guard.alarm import AlarmSounder
+from backdoor_watch.guard.alert_log import AlertLog
+from backdoor_watch.guard.guard_config_store import GuardConfigStore
+from backdoor_watch.guard.guard_engine import GuardEngine
+from backdoor_watch.guard.guard_rules import load_guard_rules
+from backdoor_watch.guard.guard_service import GuardService
+from backdoor_watch.guard.trust_policy import ProgramHasher, TrustPolicy
+from backdoor_watch.malware.hasher import sha256_of
 from backdoor_watch.ip_intel.ip_intel_service import IpIntelService
 from backdoor_watch.ip_intel.ip_intel_store import IpIntelStore
 from backdoor_watch.ip_intel.ip_providers import IpWhoIsProvider
@@ -84,6 +92,7 @@ class AppServices:
     malware_scanner: MalwareScanner
     intel_settings: IntelSettingsStore
     ip_intel: IpIntelService
+    guard: GuardService
     jobs: list[PeriodicJob]
 
     def start(self) -> None:
@@ -114,9 +123,9 @@ class _Insights:
 
 
 def _insights(settings: Settings, state: SystemState, ledger: TrafficLedger, events: EventLog,
-              ip_intel: IpIntelService) -> _Insights:
+              ip_intel: IpIntelService, alerts: AlertLog) -> _Insights:
     archive = AnalysisArchive(settings.ai_history_path)
-    builder = ReportBuilder(state, ledger, events, lambda: archive.latest, ip_intel.lookup)
+    builder = ReportBuilder(state, ledger, events, lambda: archive.latest, ip_intel.lookup, alerts.all)
     ai_settings = AiSettingsStore(settings.ai_settings_path)
     analysis = AiAnalysisService(ai_settings, builder, archive, events)
     scheduler = AiAnalysisScheduler(AiScheduleStore(settings.ai_schedule_path), analysis, archive, events)
@@ -148,6 +157,18 @@ def _ip_intel(settings: Settings) -> IpIntelService:
     return IpIntelService(IpWhoIsProvider(), store, settings.ip_intel_settings_path)
 
 
+def _guard(settings: Settings, rules: IocRules, state: SystemState, events: EventLog,
+           response: ResponseService, alerts: AlertLog) -> GuardService:
+    guard_rules = load_guard_rules()
+    hasher = ProgramHasher(sha256_of)
+    policy = TrustPolicy(hasher)
+    attacker_ports = frozenset(p for p, rule in rules.suspicious_ports.items() if rule.severity.value == "high")
+    siren = AlarmSounder()
+    return GuardService(GuardConfigStore(settings.guard_config_path), GuardEngine(guard_rules, policy, attacker_ports),
+                        policy, hasher, response, state, events, alerts, siren.alarm, siren.test,
+                        guard_rules.allowed_host_suffixes)
+
+
 def build_services(settings: Settings) -> AppServices:
     rules = load_rules(settings.rules_path)
     state, events, ledger = SystemState(), EventLog(settings.log_dir), TrafficLedger()
@@ -155,15 +176,17 @@ def build_services(settings: Settings) -> AppServices:
     defender, vault = DefenderClient(), QuarantineVault(settings.quarantine_dir)
     firewall, capture_log = FirewallController(), CaptureLog()
     ip_intel = _ip_intel(settings)
-    insights = _insights(settings, state, ledger, events, ip_intel)
+    alerts = AlertLog()
+    insights = _insights(settings, state, ledger, events, ip_intel, alerts)
     malware_scanner, intel_settings = _malware_scanner(settings, state, events)
 
-    snapshot = SnapshotRefresher(ProcessCollector(signatures), ConnectionCollector(dns, meter), ledger, state, events,
-                                 SelfIdentity(settings.install_root))
     persistence = PersistenceRefresher(_persistence_scanner(signatures), state, events)
     findings = FindingsRefresher(ThreatScanner(), rules, state)
     response = ResponseService(ProcessController(ProcessKillPolicy(rules.protected_processes)), vault, firewall,
                                PersistenceRemover(vault, settings.backup_dir), defender, state, events)
+    guard = _guard(settings, rules, state, events, response, alerts)
+    snapshot = SnapshotRefresher(ProcessCollector(signatures), ConnectionCollector(dns, meter), ledger, state, events,
+                                 SelfIdentity(settings.install_root), guard.check)
     jobs = [
         PeriodicJob("snapshot", 2, snapshot.refresh),
         PeriodicJob("signatures", 3, signatures.verify_pending),
@@ -185,7 +208,7 @@ def build_services(settings: Settings) -> AppServices:
         findings_refresher=findings, reports=insights.reports, ai_settings=insights.ai_settings,
         ai_analysis=insights.ai_analysis, analysis_archive=insights.archive, ai_scheduler=insights.scheduler,
         flockion_settings=insights.flockion_settings, flockion=insights.flockion,
-        malware_scanner=malware_scanner, intel_settings=intel_settings, ip_intel=ip_intel, jobs=jobs,
+        malware_scanner=malware_scanner, intel_settings=intel_settings, ip_intel=ip_intel, guard=guard, jobs=jobs,
     )
     if settings.demo:
         seed_demo(services)

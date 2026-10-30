@@ -11,6 +11,8 @@ import { ReportsPage } from "./features/reports/ReportsPage";
 import { ConnectionsPage } from "./features/connections/ConnectionsPage";
 import { ListenersPage } from "./features/connections/ListenersPage";
 import { FindingsPage } from "./features/findings/FindingsPage";
+import { GuardAlarmBanner } from "./features/guard/GuardAlarmBanner";
+import { GuardPage } from "./features/guard/GuardPage";
 import { MalwarePage } from "./features/malware/MalwarePage";
 import { OverviewPage } from "./features/overview/OverviewPage";
 import { PersistencePage } from "./features/persistence/PersistencePage";
@@ -21,7 +23,7 @@ import { AiVerdictBanner } from "./features/ai/AiVerdictBanner";
 import { useAiSchedule, useSystemStatus } from "./hooks/queries";
 
 type TabId = "overview" | "findings" | "connections" | "listeners" | "traffic" | "processes" | "persistence" | "activity"
-  | "malware" | "response" | "ai" | "reports";
+  | "guard" | "malware" | "response" | "ai" | "reports";
 
 const TABS: NavItem<TabId>[] = [
   { id: "overview", label: "Overview", group: "Monitor" },
@@ -32,6 +34,7 @@ const TABS: NavItem<TabId>[] = [
   { id: "processes", label: "Processes", group: "Monitor" },
   { id: "persistence", label: "Autostart", group: "Monitor" },
   { id: "activity", label: "Activity", group: "Monitor" },
+  { id: "guard", label: "Install guard", group: "Respond" },
   { id: "malware", label: "Malware scan", group: "Respond" },
   { id: "response", label: "Response tools", group: "Respond" },
   { id: "ai", label: "AI analysis", group: "Intelligence" },
@@ -58,6 +61,7 @@ export function App() {
     processes: <ProcessesPage />,
     persistence: <PersistencePage />,
     activity: <ActivityPage />,
+    guard: <GuardPage />,
     malware: <MalwarePage />,
     response: <ResponsePage />,
     ai: <AiPage />,
@@ -79,6 +83,7 @@ export function App() {
                 (http://127.0.0.1:8765/#token=…).
               </Notice>
             )}
+            {tab !== "guard" && <GuardAlarmBanner onOpenGuard={() => setTab("guard")} />}
             {tab !== "ai" && <AiVerdictBanner onOpen={() => setTab("ai")} />}
             {pages[tab]}
           </main>

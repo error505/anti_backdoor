@@ -1,5 +1,8 @@
 """Background refresh steps. Each one reads a part of the system and publishes it to SystemState."""
 
+import logging
+from collections.abc import Callable
+
 from backdoor_watch.analysis.ioc_rules import IocRules
 from backdoor_watch.analysis.path_classifier import PathClassifier
 from backdoor_watch.analysis.scan_context import ScanContext
@@ -12,13 +15,17 @@ from backdoor_watch.domain.activity import ActivityEvent, ActivityKind
 from backdoor_watch.monitoring.event_log import EventLog
 from backdoor_watch.monitoring.self_identity import SelfIdentity
 from backdoor_watch.monitoring.snapshot_diff import diff_connections, diff_persistence, diff_processes
-from backdoor_watch.monitoring.system_state import SystemState
+from backdoor_watch.monitoring.system_state import Snapshot, SystemState
 from backdoor_watch.monitoring.traffic_ledger import TrafficLedger
+
+logger = logging.getLogger(__name__)
 
 
 class SnapshotRefresher:
     def __init__(self, processes: ProcessCollector, connections: ConnectionCollector, ledger: TrafficLedger,
-                 state: SystemState, events: EventLog, self_identity: SelfIdentity) -> None:
+                 state: SystemState, events: EventLog, self_identity: SelfIdentity,
+                 on_refresh: Callable[[Snapshot], None] = lambda snapshot: None) -> None:
+        self._on_refresh = on_refresh
         self._processes = processes
         self._connections = connections
         self._ledger = ledger
@@ -44,6 +51,13 @@ class SnapshotRefresher:
                                                       f"{len(connections)} sockets"))
             self._has_baseline = True
         self._state.update(processes=processes, connections=connections, own_pids=own_pids)
+        self._notify(self._state.current)
+
+    def _notify(self, snapshot: Snapshot) -> None:
+        try:
+            self._on_refresh(snapshot)
+        except Exception:  # a guard fault must never stop monitoring
+            logger.exception("snapshot listener failed")
 
 
 class PersistenceRefresher:

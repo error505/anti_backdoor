@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 
 from backdoor_watch.domain.activity import ActivityKind
 from backdoor_watch.domain.ai import AiAnalysis
+from backdoor_watch.domain.guard import GuardAlert
 from backdoor_watch.domain.ip_intel import IpIntel
 from backdoor_watch.domain.network import Connection
 from backdoor_watch.domain.process import ProcessInfo
@@ -55,7 +56,9 @@ def _summarize(conn: Connection) -> ConnectionSummary:
 class ReportBuilder:
     def __init__(self, state: SystemState, ledger: TrafficLedger, events: EventLog,
                  last_analysis: Callable[[], AiAnalysis | None],
-                 server_intel: Callable[[list[str]], list[IpIntel]] = lambda ips: []) -> None:
+                 server_intel: Callable[[list[str]], list[IpIntel]] = lambda ips: [],
+                 guard_alerts: Callable[[], list[GuardAlert]] = lambda: []) -> None:
+        self._guard_alerts = guard_alerts
         self._state = state
         self._ledger = ledger
         self._events = events
@@ -81,6 +84,7 @@ class ReportBuilder:
             autostart_non_microsoft=[e for e in snapshot.persistence if not e.is_microsoft],
             traffic_by_process=self._ledger.by_process()[:_TOP_TRAFFIC],
             traffic_by_remote=self._ledger.by_remote()[:_TOP_TRAFFIC],
+            guard_alerts=self._guard_alerts(),
             remote_server_intel=self._server_intel([c.remote_ip for c in external if c.remote_ip]),
             notable_events=[e for e in self._events.since(0, 10_000) if e.kind in _NOTABLE_EVENTS][-_MAX_EVENTS:],
             ai_analysis=self._last_analysis() if include_ai_analysis else None,

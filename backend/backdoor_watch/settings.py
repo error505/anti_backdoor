@@ -31,6 +31,10 @@ class Settings:
         return self.data_dir / "virustotal_cache.json"
 
     @property
+    def guard_config_path(self) -> Path:
+        return self.data_dir / "guard_config.json"
+
+    @property
     def ip_intel_cache_path(self) -> Path:
         return self.data_dir / "ip_intel_cache.json"
 
