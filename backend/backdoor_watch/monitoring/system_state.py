@@ -4,6 +4,7 @@ import threading
 from dataclasses import dataclass, field, replace
 
 from backdoor_watch.domain.findings import Finding
+from backdoor_watch.domain.malware import MalwareHit
 from backdoor_watch.domain.network import Connection
 from backdoor_watch.domain.persistence import PersistenceEntry
 from backdoor_watch.domain.process import ProcessInfo
@@ -19,6 +20,7 @@ class Snapshot:
     defender_threats: list[DefenderThreat] = field(default_factory=list)
     defender_status: DefenderStatus | None = None
     own_pids: frozenset[int] = frozenset()
+    malware_hits: list[MalwareHit] = field(default_factory=list)
     persistence_scanned: bool = False
 
 

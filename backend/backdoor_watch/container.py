@@ -29,6 +29,11 @@ from backdoor_watch.collectors.process_collector import ProcessCollector
 from backdoor_watch.collectors.signature_verifier import SignatureVerifier
 from backdoor_watch.collectors.tcp_traffic_meter import TcpTrafficMeter
 from backdoor_watch.demo.demo_seed import seed_demo
+from backdoor_watch.domain.activity import ActivityEvent, ActivityKind
+from backdoor_watch.domain.malware import MalwareHit
+from backdoor_watch.malware.hash_intel import LocalHashList, VirusTotalLookup
+from backdoor_watch.malware.intel_settings import IntelSettingsStore
+from backdoor_watch.malware.scanner import MalwareScanner
 from backdoor_watch.flockion.client import FlockionClient
 from backdoor_watch.flockion.service import FlockionService
 from backdoor_watch.flockion.settings_store import FlockionSettingsStore
@@ -72,6 +77,8 @@ class AppServices:
     ai_scheduler: AiAnalysisScheduler
     flockion_settings: FlockionSettingsStore
     flockion: FlockionService
+    malware_scanner: MalwareScanner
+    intel_settings: IntelSettingsStore
     jobs: list[PeriodicJob]
 
     def start(self) -> None:
@@ -114,6 +121,19 @@ def _insights(settings: Settings, state: SystemState, ledger: TrafficLedger, eve
                      flockion=FlockionService(flockion_settings, builder, FlockionClient(), events))
 
 
+def _malware_scanner(settings: Settings, state: SystemState, events: EventLog) -> tuple[MalwareScanner, IntelSettingsStore]:
+    intel = IntelSettingsStore(settings.intel_settings_path)
+
+    def publish(hits: list[MalwareHit]) -> None:
+        state.update(malware_hits=hits)
+        events.append(ActivityEvent(kind=ActivityKind.ACTION_TAKEN,
+                                    summary=f"Malware scan finished: {len(hits)} flagged file(s)"))
+
+    scanner = MalwareScanner(LocalHashList(settings.known_bad_hashes_path), VirusTotalLookup(settings.virustotal_cache_path),
+                             intel.virustotal_key, lambda: state.current, publish, [settings.install_root])
+    return scanner, intel
+
+
 def build_services(settings: Settings) -> AppServices:
     rules = load_rules(settings.rules_path)
     state, events, ledger = SystemState(), EventLog(settings.log_dir), TrafficLedger()
@@ -121,6 +141,7 @@ def build_services(settings: Settings) -> AppServices:
     defender, vault = DefenderClient(), QuarantineVault(settings.quarantine_dir)
     firewall, capture_log = FirewallController(), CaptureLog()
     insights = _insights(settings, state, ledger, events)
+    malware_scanner, intel_settings = _malware_scanner(settings, state, events)
 
     snapshot = SnapshotRefresher(ProcessCollector(signatures), ConnectionCollector(dns, meter), ledger, state, events,
                                  SelfIdentity(settings.install_root))
@@ -148,7 +169,8 @@ def build_services(settings: Settings) -> AppServices:
         response=response, process_queries=ProcessQueries(state), persistence_refresher=persistence,
         findings_refresher=findings, reports=insights.reports, ai_settings=insights.ai_settings,
         ai_analysis=insights.ai_analysis, analysis_archive=insights.archive, ai_scheduler=insights.scheduler,
-        flockion_settings=insights.flockion_settings, flockion=insights.flockion, jobs=jobs,
+        flockion_settings=insights.flockion_settings, flockion=insights.flockion,
+        malware_scanner=malware_scanner, intel_settings=intel_settings, jobs=jobs,
     )
     if settings.demo:
         seed_demo(services)

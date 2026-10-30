@@ -4,7 +4,8 @@ import time
 from typing import TYPE_CHECKING
 
 from backdoor_watch.demo.demo_findings import demo_findings, demo_persistence
-from backdoor_watch.demo.demo_processes import C2_IP, DEMO_OWN_PIDS, demo_connections, demo_processes
+from backdoor_watch.demo.demo_processes import C2_IP, DEMO_OWN_PIDS, USER, demo_connections, demo_processes
+from backdoor_watch.domain.malware import MalwareHit, MalwareScanStatus, ScanScope, ThreatVerdict
 from backdoor_watch.domain.activity import ActivityEvent, ActivityKind
 from backdoor_watch.domain.ai import AiAnalysis, AiProvider, AiVerdict, AnalysisTrigger
 from backdoor_watch.domain.ai_schedule import AiScheduleState
@@ -71,8 +72,20 @@ def _seed_traffic(services: "AppServices", connections: list) -> None:
     services.ledger.record(connections)
 
 
+def _demo_malware_hit() -> MalwareHit:
+    verdict = ThreatVerdict(sha256="d3" * 32, source="virustotal", malicious=41, suspicious=2, engines=72,
+                            label="trojan.ferret (demo)", name="python.exe")
+    return MalwareHit(path=rf"{USER}\.pyp\python.exe", sha256=verdict.sha256, size=104_448, reason="running program",
+                      verdict=verdict, severity=verdict.severity(), pids=[3377])
+
+
 def seed_demo(services: "AppServices") -> None:
     now = time.time()
+    hit = _demo_malware_hit()
+    services.malware_scanner.restore(MalwareScanStatus(
+        state="finished", scope=ScanScope.QUICK, phase="done", files_total=11, files_hashed=11, lookups_planned=6,
+        lookups_done=6, unknown_to_virustotal=2, started_at=now - 540, finished_at=now - 420, hits=[hit]))
+    services.state.update(malware_hits=[hit])
     connections = demo_connections()
     services.state.update(
         processes=demo_processes(), connections=connections, persistence=demo_persistence(),

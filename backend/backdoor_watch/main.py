@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from backdoor_watch.ai.analyst import AiProviderError
-from backdoor_watch.api import (ai_routes, flockion_routes, network_routes, process_routes, report_routes, response_routes,
+from backdoor_watch.api import (ai_routes, flockion_routes, malware_routes, network_routes, process_routes, report_routes, response_routes,
                                 system_routes, threat_routes)
 from backdoor_watch.api.local_access_guard import LocalAccessGuard
 from backdoor_watch.container import AppServices
@@ -34,7 +34,7 @@ def create_app(services: AppServices) -> FastAPI:
                        read_only=services.settings.demo)
     app.add_exception_handler(BackdoorWatchError, _domain_error_handler)
     for module in (system_routes, process_routes, network_routes, threat_routes, response_routes, ai_routes,
-                   report_routes, flockion_routes):
+                   report_routes, flockion_routes, malware_routes):
         app.include_router(module.router)
     if services.settings.frontend_dist.is_dir():
         app.mount("/", StaticFiles(directory=services.settings.frontend_dist, html=True), name="ui")

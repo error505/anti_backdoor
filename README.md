@@ -34,6 +34,9 @@ connector can review the findings for you.
   published command-line patterns, loaders in source code, remote-access tools. Rules are plain JSON.
 - **Respond safely:** kill process trees, quarantine files (restorable, with SHA-256), block IPs or programs in the
   firewall, remove autostart entries (with backup). Critical Windows processes are protected.
+- **Malware scan:** hashes running and autostart programs (and optionally files in Downloads, Desktop, Temp) and
+  checks them against your own known-bad list and **VirusTotal** (hash only, files are never uploaded), with one-click
+  Defender scans. It complements, and does not replace, your antivirus.
 - **AI Watch:** let Claude or an OpenAI model review a redacted snapshot on a timer, for a limited time, skipping
   runs when nothing changed so you do not burn tokens.
 - **Reports and integrations:** HTML/Markdown/JSON reports, upload to S3/Azure/GCS with a pre-signed URL or a
@@ -43,7 +46,7 @@ connector can review the findings for you.
 | | |
 | --- | --- |
 | ![Findings](docs/screenshots/findings.png) | ![Connections](docs/screenshots/connections.png) |
-| ![AI analysis](docs/screenshots/ai.png) | ![Autostart](docs/screenshots/persistence.png) |
+| ![AI analysis](docs/screenshots/ai.png) | ![Malware scan](docs/screenshots/malware.png) |
 
 More screens and a tab-by-tab tour are in the **[User guide](docs/USER_GUIDE.md)**. The screenshots use demo mode
 (fictional data, documentation-range IP addresses).
@@ -99,16 +102,23 @@ Tests: `cd backend; .\.venv\Scripts\python.exe -m pytest` and `cd frontend; npm 
 
 ## Connect it to Flockion
 
-Flockion agents can be called through API access. In Flockion, open the agent's profile → **API & editor access**
-and create a runtime key (it starts with `flk_` and is shown once). Then in **Reports → Flockion agent** enter the
-agent ID and key, press **Test connection**, and use **Send to agent** to hand it a redacted snapshot.
+Flockion agents can be called through API access. In Flockion, open the agent's profile → **API & editor access**,
+copy the runtime URL and create a runtime key (it starts with `flk_` and is shown once). Then in
+**Reports → Flockion agent** paste both, press **Test connection**, and use **Send to agent** to hand it a redacted
+snapshot and read its answer in the dashboard.
 
-- The request goes to `POST https://api.flockion.com/api/v1/api-access/agent/AGENT_ID/run`.
-- The key is encrypted with Windows DPAPI and never returned to the browser. Only `https://` is allowed.
+- It speaks the same protocol as the Flockion VS Code extension: the key is checked with
+  `GET …/api-access/agent/AGENT_ID/editor-models` (`Authorization: Bearer flk_…`), and the task runs over a
+  WebSocket at `wss://api.flockion.com/api/v1/api-access/agent/AGENT_ID/editor`. Agents and teams both work.
+- The agent runs in read-only *ask* mode with a $2 budget cap, and **every tool or approval request from the agent
+  is denied automatically**, because the snapshot contains attacker-controlled text such as command lines.
+- The key is encrypted with Windows DPAPI and never returned to the browser. Redirects are never followed. Only
+  `https://` is allowed (plain `http://` only for localhost).
 - Only redacted data is sent (user and host names, tokens and passwords are masked), and "Preview" shows exactly what.
-- Flockion's public docs do not describe the auth header or JSON body, so these are configurable (defaults:
-  `Authorization: Bearer <key>` and a JSON field named `message`). If the test ping fails, adjust them under
-  *Request format* using what your agent's API & editor access page shows. Details: [docs](docs/USER_GUIDE.md#flockion).
+- *Test connection* only validates the key; it starts no task and sends no system data.
+
+The protocol was taken from the extension's source code and tested against local stand-ins for the server. Details:
+[docs](docs/USER_GUIDE.md#flockion).
 
 ## What it detects, and what it cannot
 
@@ -120,6 +130,13 @@ agent ID and key, press **Test connection**, and use **Send to agent** to hand i
 | Interpreters running from hidden or user-writable folders; unsigned programs there | Path rules |
 | Persistence pointing at scripts or user folders, WMI consumers, AnyDesk and similar tools | Autostart scan every 2 min |
 | Loaders in a repo: `new Function`, remote code hosts, raw-IP URLs, VS Code auto-run tasks, npm install hooks | Code-folder scan and sweep |
+| Known viruses, trojans and worms (any family) | SHA-256 reputation: your known-bad list plus VirusTotal's ~70 engines |
+
+**Real malware (viruses, worms, trojans).** This tool does not contain an antivirus engine, and writing a good one
+is a research effort on its own. It adds what an antivirus does not: reputation lookups by hash, behaviour checks
+(who launched it, where it connects, what persists) and response actions. Use it next to Defender or McAfee, and use
+the **Scan with Defender** buttons for signature scanning. A file nobody has uploaded to VirusTotal yet, or a
+freshly recompiled variant, will not be recognised by hash; the behaviour checks are there for exactly that case.
 
 **Limits.** These are indicator- and behaviour-based heuristics, not antivirus signatures, so a new variant with
 different paths and ports can slip through. TLS content is encrypted: you see where data goes and how much, not

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import {
-  aiApi, captureApi, defenderApi, flockionApi, firewallApi, networkApi, processApi, quarantineApi, systemApi, threatApi,
+  aiApi, captureApi, defenderApi, flockionApi, malwareApi, firewallApi, networkApi, processApi, quarantineApi, systemApi, threatApi,
 } from "../api/endpoints";
 
 const LIVE = 2000;
@@ -46,6 +46,13 @@ export const useDefender = () =>
   useQuery({ queryKey: ["defender"], queryFn: defenderApi.overview, refetchInterval: 30000 });
 
 export const useAiSettings = () => useQuery({ queryKey: ["ai-settings"], queryFn: aiApi.settings });
+
+/** Polls fast while a scan runs (progress), slowly otherwise. */
+export const useMalwareStatus = () =>
+  useQuery({ queryKey: ["malware-status"], queryFn: malwareApi.status,
+             refetchInterval: (query) => (query.state.data?.state === "running" ? 1500 : 15000) });
+
+export const useIntelSettings = () => useQuery({ queryKey: ["intel-settings"], queryFn: malwareApi.settings });
 
 export const useFlockionSettings = () => useQuery({ queryKey: ["flockion-settings"], queryFn: flockionApi.settings });
 

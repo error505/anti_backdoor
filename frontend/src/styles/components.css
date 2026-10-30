@@ -48,6 +48,11 @@
 .field { display: flex; flex-direction: column; gap: 4px; color: var(--muted); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; }
 .field input, .field select { color: var(--text); text-transform: none; letter-spacing: normal; }
 
+.guide { border: 1px solid var(--border); padding: 10px 14px; background: rgba(var(--accent-rgb), 0.04); }
+.guide[open] > summary { margin-bottom: 10px; }
+.guide .preview { max-height: 190px; margin: 8px 0; }
+.progress { height: 6px; background: rgba(var(--accent-rgb), 0.12); overflow: hidden; }
+.progress span { display: block; height: 100%; background: var(--accent); box-shadow: 0 0 10px var(--accent); transition: width 0.4s ease; }
 .duration-row { display: flex; gap: 8px; }
 .duration-row input { width: 110px; }
 .banner-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }

@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from backdoor_watch.analysis.ioc_rules import IocRules
 from backdoor_watch.analysis.path_classifier import PathClassifier
 from backdoor_watch.domain.findings import Finding, FindingTarget, FindingTargetKind
+from backdoor_watch.domain.malware import MalwareHit
 from backdoor_watch.domain.network import Connection
 from backdoor_watch.domain.persistence import PersistenceEntry
 from backdoor_watch.domain.process import ProcessInfo
@@ -21,6 +22,7 @@ class ScanContext:
     # The monitor spawns PowerShell helpers; they must not be reported as threats.
     own_pids: frozenset[int]
     defender_status: DefenderStatus | None = None
+    malware_hits: Sequence[MalwareHit] = ()
 
 
 ThreatCheck = Callable[[ScanContext], list[Finding]]

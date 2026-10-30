@@ -267,24 +267,75 @@ export interface ContextPreview {
 }
 
 export interface FlockionSettings {
-  agent_id: string;
-  base_url: string;
-  auth_header: string;
-  auth_scheme: string;
-  body_field: string;
+  endpoint: string;
   has_stored_key: boolean;
   key_hint: string | null;
 }
 
-export interface FlockionResult {
-  status_code: number;
+export interface FlockionCheck {
   ok: boolean;
-  url: string;
+  asset_name: string | null;
+  model_count: number;
+  detail: string;
+}
+
+export interface FlockionResult {
+  ok: boolean;
+  status: string;
+  output: string;
   sent_chars: number;
-  response_text: string;
+  cost_usd: number | null;
+  total_tokens: number | null;
+  denied_tool_requests: number;
 }
 
 export type FlockionMode = "findings" | "full";
+
+export type ScanScope = "quick" | "deep";
+
+export interface ThreatVerdict {
+  sha256: string;
+  source: "local-list" | "virustotal";
+  malicious: number;
+  suspicious: number;
+  engines: number;
+  label: string | null;
+  name: string | null;
+}
+
+export interface MalwareHit {
+  path: string;
+  sha256: string;
+  size: number;
+  reason: string;
+  verdict: ThreatVerdict;
+  severity: Severity;
+  pids: number[];
+}
+
+export interface MalwareScanStatus {
+  state: "idle" | "running" | "finished" | "failed";
+  scope: ScanScope;
+  phase: string;
+  files_total: number;
+  files_hashed: number;
+  lookups_planned: number;
+  lookups_done: number;
+  unknown_to_virustotal: number;
+  started_at: number | null;
+  finished_at: number | null;
+  hits: MalwareHit[];
+  message: string | null;
+  rate_limited: boolean;
+  virustotal_enabled: boolean;
+  local_hashes: number;
+}
+
+export interface IntelSettings {
+  has_stored_key: boolean;
+  key_hint: string | null;
+  uses_environment_key: boolean;
+}
 
 export type ReportFormat = "json" | "markdown" | "html";
 export type UploadMethod = "PUT" | "POST";

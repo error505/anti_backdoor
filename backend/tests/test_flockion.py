@@ -1,77 +1,121 @@
+"""Tests against fake Flockion servers that follow the protocol used by the Flockion VS Code extension."""
+
 import json
 import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import pytest
+from websockets.sync.server import serve
 
-from backdoor_watch.domain.errors import ActionRefusedError
+from backdoor_watch.domain.errors import ActionFailedError, ActionRefusedError
+from backdoor_watch.domain.flockion import parse_endpoint
 from backdoor_watch.flockion.client import FlockionClient
 from backdoor_watch.flockion.settings_store import FlockionConnection, FlockionSettingsStore
 
-SECRET = "flk_test_secret_0123456789"
+KEY = "flk_" + "k" * 24
+ENDPOINT = "https://api.flockion.com/api/v1/api-access/agent/abc-123/run"
 
 
-def _save(store, **overrides):
-    values = {"agent_id": "agent_123", "base_url": "https://api.flockion.com", "auth_header": "Authorization",
-              "auth_scheme": "Bearer", "body_field": "message", "api_key": SECRET} | overrides
-    store.save(**values)
+def test_parses_the_runtime_url_like_the_extension():
+    endpoint = parse_endpoint(ENDPOINT)
+    assert (endpoint.asset_type, endpoint.asset_id) == ("agent", "abc-123")
+    assert endpoint.operation_url("editor-models") == "https://api.flockion.com/api/v1/api-access/agent/abc-123/editor-models"
+    assert endpoint.websocket_url() == "wss://api.flockion.com/api/v1/api-access/agent/abc-123/editor"
 
 
-def test_key_is_encrypted_on_disk_and_hidden_from_view(tmp_path):
-    store = FlockionSettingsStore(tmp_path / "f.json")
-    _save(store)
-    assert SECRET not in (tmp_path / "f.json").read_text(encoding="utf-8")
-    view = store.view()
-    assert view.has_stored_key and view.key_hint == "…6789" and SECRET not in view.model_dump_json()
-
-
-@pytest.mark.parametrize("override", [
-    {"base_url": "http://api.flockion.com"},        # key must never travel over plain http
-    {"base_url": "https://api.flockion.com/x?a=1"},
-    {"agent_id": "../../etc"},
-    {"auth_header": "Bad Header"},
-    {"body_field": "1abc"},
+@pytest.mark.parametrize("url", [
+    "http://api.flockion.com/api/v1/api-access/agent/a/run",     # key must not travel over plain http
+    "https://flockion.com/docs/vscode-extension",
+    "https://api.flockion.com/api/v1/api-access/agent/a/run?x=1",
+    "https://user:pw@api.flockion.com/api/v1/api-access/agent/a/run",
+    "https://api.flockion.com/api/v1/api-access/agent/a_b/run",  # ids allow letters, digits and hyphens only
 ])
-def test_rejects_unsafe_settings(tmp_path, override):
+def test_rejects_unsafe_or_wrong_endpoints(url):
     with pytest.raises(ActionRefusedError):
-        _save(FlockionSettingsStore(tmp_path / "f.json"), **override)
+        parse_endpoint(url)
 
 
-def test_run_url_uses_the_documented_endpoint(tmp_path):
+def test_http_is_allowed_on_localhost_only():
+    assert parse_endpoint("http://127.0.0.1:8000/api/v1/api-access/team/t1/run").websocket_url().startswith("ws://127.0.0.1:8000")
+
+
+def test_key_is_encrypted_validated_and_hidden(tmp_path):
     store = FlockionSettingsStore(tmp_path / "f.json")
-    _save(store)
-    assert store.connection().run_url() == "https://api.flockion.com/api/v1/api-access/agent/agent_123/run"
+    store.save(ENDPOINT, KEY)
+    assert KEY not in (tmp_path / "f.json").read_text(encoding="utf-8")
+    view = store.view()
+    assert view.has_stored_key and view.key_hint == "…kkkk" and KEY not in view.model_dump_json()
+    with pytest.raises(ActionRefusedError):
+        store.save(ENDPOINT, "sk-not-a-flockion-key")
 
 
-class _Recorder(BaseHTTPRequestHandler):
-    seen: dict = {}
+class _ModelsHandler(BaseHTTPRequestHandler):
+    seen_auth = None
 
-    def do_POST(self):  # noqa: N802 (http.server naming)
-        length = int(self.headers["Content-Length"])
-        _Recorder.seen = {"path": self.path, "auth": self.headers["Authorization"],
-                          "body": json.loads(self.rfile.read(length))}
-        self.send_response(401)
+    def do_GET(self):  # noqa: N802
+        _ModelsHandler.seen_auth = self.headers.get("Authorization")
+        ok = _ModelsHandler.seen_auth == f"Bearer {KEY}"
+        self.send_response(200 if ok else 401)
+        self.send_header("Content-Type", "application/json")
         self.end_headers()
-        self.wfile.write(b'{"error":"bad key"}')
+        self.wfile.write(json.dumps({"items": [{"provider": "p"}], "assetName": "SOC Agent"} if ok
+                                    else {"detail": "Bearer API key required"}).encode())
 
-    def log_message(self, *args):  # keep test output quiet
+    def log_message(self, *args):
         pass
 
 
-def test_client_posts_json_with_bearer_key_and_returns_error_bodies():
-    server = HTTPServer(("127.0.0.1", 0), _Recorder)
+def _local(port: int) -> str:
+    return f"http://127.0.0.1:{port}/api/v1/api-access/agent/abc-123/run"
+
+
+def test_check_sends_bearer_key_and_reads_the_agent_name():
+    server = HTTPServer(("127.0.0.1", 0), _ModelsHandler)
     threading.Thread(target=server.serve_forever, daemon=True).start()
-    connection = FlockionConnection("agent_123", f"http://127.0.0.1:{server.server_port}", "Authorization",
-                                    "Bearer", "message", SECRET)
-    result = FlockionClient().run_agent(connection, "hello")
+    ok = FlockionClient().check(FlockionConnection(_local(server.server_port), KEY))
+    bad = FlockionClient().check(FlockionConnection(_local(server.server_port), "flk_" + "x" * 24))
     server.shutdown()
-    assert _Recorder.seen["path"] == "/api/v1/api-access/agent/agent_123/run"
-    assert _Recorder.seen["auth"] == f"Bearer {SECRET}"
-    assert _Recorder.seen["body"] == {"message": "hello"}
-    assert (result.status_code, result.ok, "bad key" in result.response_text) == (401, False, True)
+    assert (ok.ok, ok.asset_name, ok.model_count) == (True, "SOC Agent", 1)
+    assert bad.ok is False and "Bearer API key required" in bad.detail
+
+
+def test_run_follows_the_websocket_protocol_and_denies_every_tool_request():
+    seen: dict = {}
+
+    def handler(socket):
+        start = json.loads(socket.recv())
+        seen["start"] = start
+        socket.send(json.dumps({"kind": "ready"}))
+        socket.send(json.dumps({"kind": "approval_required", "actionId": "a1", "action": {"action": "run"}}))
+        seen["approval"] = json.loads(socket.recv())
+        socket.send(json.dumps({"kind": "execute_tool", "actionId": "a2", "action": {"action": "read"}}))
+        seen["tool"] = json.loads(socket.recv())
+        socket.send(json.dumps({"kind": "done", "result": {"status": "succeeded", "output": "VERDICT: CLEAR",
+                                                           "spend": {"costUsd": 0.12, "totalTokens": 3400}}}))
+
+    with serve(handler, "127.0.0.1", 0) as server:
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        port = server.socket.getsockname()[1]
+        result = FlockionClient().run(FlockionConnection(_local(port), KEY), "snapshot")
+    assert seen["start"]["kind"] == "start" and seen["start"]["token"] == KEY
+    assert (seen["start"]["mode"], seen["start"]["permissionMode"], seen["start"]["message"]) == ("ask", "review", "snapshot")
+    assert seen["start"]["budgetCapUsd"] > 0
+    assert seen["approval"] == {"kind": "approval", "actionId": "a1", "approved": False}
+    assert seen["tool"]["kind"] == "tool_result" and seen["tool"]["result"]["ok"] is False
+    assert (result.ok, result.output, result.cost_usd, result.denied_tool_requests) == (True, "VERDICT: CLEAR", 0.12, 2)
+
+
+def test_run_surfaces_server_errors():
+    def handler(socket):
+        socket.recv()
+        socket.send(json.dumps({"kind": "error", "message": "Runtime admission denied"}))
+
+    with serve(handler, "127.0.0.1", 0) as server:
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        with pytest.raises(ActionFailedError, match="Runtime admission denied"):
+            FlockionClient().run(FlockionConnection(_local(server.socket.getsockname()[1]), KEY), "x")
 
 
 def test_client_refuses_without_a_key():
-    connection = FlockionConnection("agent_123", "https://api.flockion.com", "Authorization", "Bearer", "message", None)
     with pytest.raises(ActionRefusedError):
-        FlockionClient().run_agent(connection, "hello")
+        FlockionClient().run(FlockionConnection(ENDPOINT, None), "hello")

@@ -81,6 +81,6 @@ class FindingsRefresher:
         snapshot = self._state.current
         context = ScanContext(processes=list(snapshot.processes.values()), connections=snapshot.connections,
                               persistence=snapshot.persistence, defender_threats=snapshot.defender_threats,
-                              defender_status=snapshot.defender_status,
+                              defender_status=snapshot.defender_status, malware_hits=snapshot.malware_hits,
                               rules=self._rules, paths=self._paths, own_pids=snapshot.own_pids)
         self._state.update(findings=self._scanner.scan(context))

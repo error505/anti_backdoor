@@ -3,6 +3,7 @@ import { ApiError, hasSessionToken } from "./api/client";
 import { BootSequence } from "./components/BootSequence";
 import { Notice } from "./components/Layout";
 import { SciFiBackdrop } from "./components/SciFiBackdrop";
+import { SideNav, type NavItem } from "./components/SideNav";
 import { TopBar } from "./components/TopBar";
 import { ActivityPage } from "./features/activity/ActivityPage";
 import { AiPage } from "./features/ai/AiPage";
@@ -10,6 +11,7 @@ import { ReportsPage } from "./features/reports/ReportsPage";
 import { ConnectionsPage } from "./features/connections/ConnectionsPage";
 import { ListenersPage } from "./features/connections/ListenersPage";
 import { FindingsPage } from "./features/findings/FindingsPage";
+import { MalwarePage } from "./features/malware/MalwarePage";
 import { OverviewPage } from "./features/overview/OverviewPage";
 import { PersistencePage } from "./features/persistence/PersistencePage";
 import { ProcessesPage } from "./features/processes/ProcessesPage";
@@ -19,20 +21,21 @@ import { AiVerdictBanner } from "./features/ai/AiVerdictBanner";
 import { useAiSchedule, useSystemStatus } from "./hooks/queries";
 
 type TabId = "overview" | "findings" | "connections" | "listeners" | "traffic" | "processes" | "persistence" | "activity"
-  | "response" | "ai" | "reports";
+  | "malware" | "response" | "ai" | "reports";
 
-const TABS: { id: TabId; label: string }[] = [
-  { id: "overview", label: "Overview" },
-  { id: "findings", label: "Findings" },
-  { id: "connections", label: "Connections" },
-  { id: "listeners", label: "Open ports" },
-  { id: "traffic", label: "Traffic & payloads" },
-  { id: "processes", label: "Processes" },
-  { id: "persistence", label: "Autostart" },
-  { id: "activity", label: "Activity" },
-  { id: "response", label: "Response tools" },
-  { id: "ai", label: "AI analysis" },
-  { id: "reports", label: "Reports" },
+const TABS: NavItem<TabId>[] = [
+  { id: "overview", label: "Overview", group: "Monitor" },
+  { id: "findings", label: "Findings", group: "Monitor" },
+  { id: "connections", label: "Connections", group: "Monitor" },
+  { id: "listeners", label: "Open ports", group: "Monitor" },
+  { id: "traffic", label: "Traffic & payloads", group: "Monitor" },
+  { id: "processes", label: "Processes", group: "Monitor" },
+  { id: "persistence", label: "Autostart", group: "Monitor" },
+  { id: "activity", label: "Activity", group: "Monitor" },
+  { id: "malware", label: "Malware scan", group: "Respond" },
+  { id: "response", label: "Response tools", group: "Respond" },
+  { id: "ai", label: "AI analysis", group: "Intelligence" },
+  { id: "reports", label: "Reports & Flockion", group: "Intelligence" },
 ];
 
 /** Allows deep links such as ?tab=findings (used for documentation screenshots). */
@@ -55,6 +58,7 @@ export function App() {
     processes: <ProcessesPage />,
     persistence: <PersistencePage />,
     activity: <ActivityPage />,
+    malware: <MalwarePage />,
     response: <ResponsePage />,
     ai: <AiPage />,
     reports: <ReportsPage />,
@@ -66,24 +70,19 @@ export function App() {
       <BootSequence />
       <div className="app">
         <TopBar status={status.data} aiWatch={aiWatch.data} offline={status.isError && !unauthorized} />
-        <nav className="tabs" aria-label="Sections">
-          {TABS.map((t, index) => (
-            <button key={t.id} type="button" className={t.id === tab ? "tab active" : "tab"} aria-current={t.id === tab} onClick={() => setTab(t.id)}>
-              <span className="tab-index">{String(index + 1).padStart(2, "0")}</span>
-              {t.label}
-            </button>
-          ))}
-        </nav>
-        <main key={tab} className="page-enter">
-          {(!hasSessionToken() || unauthorized) && (
-            <Notice tone="danger">
-              Missing or expired session token. Open the exact URL printed by the backend
-              (http://127.0.0.1:8765/#token=…).
-            </Notice>
-          )}
-          {tab !== "ai" && <AiVerdictBanner onOpen={() => setTab("ai")} />}
-          {pages[tab]}
-        </main>
+        <div className="shell">
+          <SideNav items={TABS} active={tab} onSelect={setTab} />
+          <main key={tab} className="page-enter">
+            {(!hasSessionToken() || unauthorized) && (
+              <Notice tone="danger">
+                Missing or expired session token. Open the exact URL printed by the backend
+                (http://127.0.0.1:8765/#token=…).
+              </Notice>
+            )}
+            {tab !== "ai" && <AiVerdictBanner onOpen={() => setTab("ai")} />}
+            {pages[tab]}
+          </main>
+        </div>
       </div>
     </>
   );

@@ -12,12 +12,16 @@ addresses (`203.0.113.x`, `198.51.100.x`) and a made-up user.
 5. [Traffic and payloads](#traffic-and-payloads)
 6. [Autostart](#autostart)
 7. [Activity](#activity)
-8. [AI analysis and AI Watch](#ai-analysis-and-ai-watch)
-9. [Reports and cloud upload](#reports-and-cloud-upload)
-10. [Flockion](#flockion)
-11. [Response tools](#response-tools)
-12. [Where data is stored](#where-data-is-stored)
-13. [Troubleshooting](#troubleshooting)
+8. [Malware scan](#malware-scan)
+9. [AI analysis and AI Watch](#ai-analysis-and-ai-watch)
+10. [Reports and cloud upload](#reports-and-cloud-upload)
+11. [Flockion](#flockion)
+12. [Response tools](#response-tools)
+13. [Where data is stored](#where-data-is-stored)
+14. [Troubleshooting](#troubleshooting)
+
+Navigation is a grouped sidebar (**Monitor**, **Respond**, **Intelligence**). On narrow windows it wraps into rows,
+so there is never a horizontal scrollbar. Any tab can be opened directly with `?tab=findings`, `?tab=malware`, etc.
 
 The monitor's own processes (the server, the window that ran `start.ps1`, its PowerShell helpers) carry a green
 **Backdoor Watch** badge and are never reported as threats. Defender running in *passive mode* while another
@@ -77,6 +81,31 @@ entries are hidden by default. **Remove autostart** backs the entry up first.
 Timeline of process starts, internet connections, new listening ports, new autostart entries and your own actions,
 also written to `backend/data/logs/activity-YYYYMMDD.jsonl` as evidence.
 
+## Malware scan
+
+![Malware scan](screenshots/malware.png)
+
+Finds **known** viruses, trojans and worms by file hash. Choose a scope:
+
+- **Quick**: programs that are running or start automatically (seconds).
+- **Deep**: plus executables and scripts changed in the last year in Downloads, Desktop, Temp and AppData.
+
+Each file's SHA-256 is checked against (1) your own list in `backend/data/known_bad_hashes.txt` (one hash per line, an
+optional label after it, `#` for comments; export lists from [MalwareBazaar](https://bazaar.abuse.ch) or your IR
+team) and (2) **VirusTotal**, if you add an API key. VirusTotal receives only the hash, never the file. Files with a
+valid publisher signature are skipped for VirusTotal to save quota, and running programs are looked up first. Free
+keys allow 4 lookups per minute and 500 per day, so **Max VirusTotal lookups** (default 30, about 8 minutes) caps one
+scan; results are cached for 7 days. If the rate limit hits, the scan stops with partial results.
+
+Severity: a local-list match or 5+ engines is *critical*, 2 to 4 engines *high*, a single engine *medium* (single
+detections are often false positives), suspicious-only *low*. Every flagged file also appears under **Findings**, with
+**Kill tree**, **Quarantine** and **Scan with Defender** actions.
+
+**What this is not.** It is not an antivirus engine. It cannot recognise malware that nobody has uploaded to
+VirusTotal, or a recompiled variant with a new hash. Use it together with Defender or McAfee (signatures, cloud
+protection) and the behaviour checks on the other tabs. "Unknown to VirusTotal" counts files it has never seen: that
+is normal for your own builds, and worth a look for anything unexpected in Temp or AppData.
+
 ## AI analysis and AI Watch
 
 ![AI analysis](screenshots/ai.png)
@@ -127,19 +156,38 @@ credentials are stored, only `https://` is accepted, and the audit log records t
 [Flockion](https://flockion.com) agents (including those you use through its VS Code extension) can be run through
 API access. This tool can hand one a redacted snapshot.
 
-1. In Flockion open the agent profile → **API & editor access** and create a runtime key. It starts with `flk_`, is
-   shown once, and has an expiry and daily call limit that you set. It is not a model-provider key.
-2. In **Reports → Flockion agent** enter the **Agent ID** and the key, then **Save**.
-3. **Test connection** sends a short ping with no system data. Check the status code and response shown.
-4. Choose **Findings summary** (small) or **Full snapshot**, use **Preview data to be sent**, then **Send to agent**.
+The panel has a built-in **How to create and connect a Flockion agent** guide with a copy-ready set of agent
+instructions. Flockion's own pages: [Create Agents](https://flockion.com/docs/create-agents),
+[Create Teams](https://flockion.com/docs/create-teams) and the
+[VS Code extension docs](https://flockion.com/docs/vscode-extension). Grant the agent **no tools**: this tool only
+needs it to read text, and denies any tool request anyway.
 
-The endpoint is `POST https://api.flockion.com/api/v1/api-access/agent/AGENT_ID/run`. The public Flockion
-documentation covers the URL and the key format but not the authentication header, the request body or the
-response, so those are editable under *Request format*. Defaults: header `Authorization` with scheme `Bearer`, and
-a JSON body `{"message": "<text>"}`. If you see HTTP 401/403 or a validation error, change those to what your
-agent's API & editor access page specifies. If you get an HTML page, you are calling the website
-(`flockion.com`) instead of the API host. "Runtime admission denied" usually means the key expired, hit its daily
-limit, or the account or provider connection lacks capacity.
+1. In Flockion open the agent (or team) profile → **API & editor access**. Copy the runtime URL, which ends in
+   `/api-access/agent/AGENT_ID/run`, and create a runtime key. The key starts with `flk_`, is shown once, and has an
+   expiry and daily call limit that you set. It is not a model-provider key.
+2. In **Reports → Flockion agent** paste the **Runtime endpoint** and the **Runtime key**, then **Save**.
+3. **Test connection** validates the key against the agent. It starts no task and sends no system data; on success
+   it shows the agent's name.
+4. Choose **Findings summary** (small) or **Full snapshot**, use **Preview data to be sent**, then **Send to agent**.
+   The answer appears below the button, with cost and token use.
+
+**How it talks to Flockion.** It uses the protocol of the Flockion VS Code extension: `GET …/editor-models` with
+`Authorization: Bearer <key>` to verify the key, then a WebSocket to `wss://…/api-access/agent/AGENT_ID/editor`
+whose first message is `{"kind": "start", "token": …, "message": …, "mode": "ask", "permissionMode": "review",
+"budgetCapUsd": 2}`. Replies arrive as `ready`, `event`, `done` (the answer is in `result.output`) or `error`
+messages.
+
+**Safety.** The agent runs in read-only *ask* mode with a $2 budget cap. If it asks to read files, run commands
+or write, the request is **denied automatically**, because the snapshot contains attacker-controlled text (command
+lines, file names). Redirects are never followed, so the key cannot be forwarded to another host.
+
+**Troubleshooting.** A "web page" error means you used `https://flockion.com` (the website); the API is
+`https://api.flockion.com/api/v1/…`. HTTP 401 means the key is wrong, expired or belongs to another agent: a key for
+one asset cannot authorize another. "Runtime admission denied" usually means the key expired, hit its daily limit, or
+the account or provider connection lacks capacity.
+
+> The protocol comes from the extension's source code and is tested here against local stand-ins for the server.
+> Treat the first real run as a check, and report differences.
 
 ## Response tools
 
@@ -155,7 +203,8 @@ when Defender is the active antivirus and Tamper Protection allows it.
 | `backend/data/logs/activity-YYYYMMDD.jsonl` | Timeline and audit trail |
 | `backend/data/quarantine/` | Quarantined files (no extension) and manifests with SHA-256 |
 | `backend/data/backups/` | Backups of removed autostart entries |
-| `backend/data/ai_settings.json`, `flockion_settings.json` | Provider choices and DPAPI-encrypted keys |
+| `backend/data/ai_settings.json`, `flockion_settings.json`, `intel_settings.json` | Provider choices and DPAPI-encrypted keys |
+| `backend/data/known_bad_hashes.txt`, `virustotal_cache.json` | Your known-bad hash list; cached VirusTotal answers |
 | `backend/data/ai_schedule.json`, `ai_history.jsonl` | AI Watch schedule and the last 50 analyses |
 
 ## Troubleshooting
@@ -167,6 +216,7 @@ when Defender is the active antivirus and Tamper Protection allows it.
 | Byte counts show "—" | Needs administrator; counting starts when a connection is first seen |
 | "Npcap is not installed" | Install Npcap from <https://npcap.com> and restart |
 | AI: "rejected the API key" | Re-enter the key and check billing in the provider's console |
-| Flockion test returns 401/403/422 | Adjust header, scheme or body field under *Request format* |
+| Flockion test fails | Check the endpoint ends in `/run`, uses `api.flockion.com/api/v1`, and the key belongs to that agent |
+| Malware scan: "rate limit" | Free VirusTotal keys allow 4 lookups/min and 500/day; lower the lookup cap and rerun later |
 | Port 8765 in use | `run.py --port 9000` (and update `vite.config.ts` in dev mode) |
 | Demo shows "actions are disabled" | Intended: demo mode is read-only |

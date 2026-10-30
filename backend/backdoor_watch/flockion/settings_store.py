@@ -5,41 +5,25 @@ import json
 import threading
 from dataclasses import dataclass
 from pathlib import Path
-from urllib.parse import urlparse
 
 from backdoor_watch.domain.errors import ActionFailedError, ActionRefusedError
-from backdoor_watch.domain.flockion import (AGENT_ID_PATTERN, BODY_FIELD_PATTERN, DEFAULT_AUTH_HEADER,
-                                            DEFAULT_AUTH_SCHEME, DEFAULT_BASE_URL, DEFAULT_BODY_FIELD,
-                                            HEADER_NAME_PATTERN, FlockionSettingsView)
+from backdoor_watch.domain.flockion import (DEFAULT_ENDPOINT, KEY_PATTERN, FlockionEndpoint, FlockionSettingsView,
+                                            parse_endpoint)
 from backdoor_watch.platform import dpapi
 
 
 @dataclass(frozen=True)
 class FlockionConnection:
-    agent_id: str
-    base_url: str
-    auth_header: str
-    auth_scheme: str
-    body_field: str
+    endpoint: str
     api_key: str | None
 
-    def run_url(self) -> str:
-        if not self.agent_id:
-            raise ActionRefusedError("Enter the Flockion agent ID first")
-        return f"{self.base_url}/api/v1/api-access/agent/{self.agent_id}/run"
+    def parsed(self) -> FlockionEndpoint:
+        return parse_endpoint(self.endpoint)
 
-
-def _validated_base_url(value: str) -> str:
-    parsed = urlparse(value.strip())
-    if parsed.scheme != "https" or not parsed.hostname or parsed.query or parsed.fragment:
-        raise ActionRefusedError("The Flockion API URL must be a plain https:// address")
-    return f"https://{parsed.netloc}"
-
-
-def _require(pattern, value: str, what: str) -> str:
-    if not pattern.match(value):
-        raise ActionRefusedError(f"Invalid {what}")
-    return value
+    def require_key(self) -> str:
+        if not self.api_key:
+            raise ActionRefusedError("Save the Flockion runtime key (starts with flk_) first")
+        return self.api_key
 
 
 class FlockionSettingsStore:
@@ -50,32 +34,22 @@ class FlockionSettingsStore:
     def connection(self) -> FlockionConnection:
         raw = self._read()
         encrypted = raw.get("key")
-        return FlockionConnection(
-            agent_id=raw.get("agent_id", ""), base_url=raw.get("base_url", DEFAULT_BASE_URL),
-            auth_header=raw.get("auth_header", DEFAULT_AUTH_HEADER), auth_scheme=raw.get("auth_scheme", DEFAULT_AUTH_SCHEME),
-            body_field=raw.get("body_field", DEFAULT_BODY_FIELD),
-            api_key=dpapi.unprotect(base64.b64decode(encrypted)).decode("utf-8") if encrypted else None)
+        api_key = dpapi.unprotect(base64.b64decode(encrypted)).decode("utf-8") if encrypted else None
+        return FlockionConnection(endpoint=raw.get("endpoint", DEFAULT_ENDPOINT), api_key=api_key)
 
     def view(self) -> FlockionSettingsView:
         c = self.connection()
-        return FlockionSettingsView(agent_id=c.agent_id, base_url=c.base_url, auth_header=c.auth_header,
-                                    auth_scheme=c.auth_scheme, body_field=c.body_field,
-                                    has_stored_key=c.api_key is not None,
+        return FlockionSettingsView(endpoint=c.endpoint, has_stored_key=c.api_key is not None,
                                     key_hint=f"…{c.api_key[-4:]}" if c.api_key else None)
 
-    def save(self, agent_id: str, base_url: str, auth_header: str, auth_scheme: str, body_field: str,
-             api_key: str | None) -> None:
+    def save(self, endpoint: str, api_key: str | None) -> None:
         """api_key None keeps the stored key; an empty string deletes it."""
-        record = {
-            "agent_id": _require(AGENT_ID_PATTERN, agent_id.strip(), "agent ID") if agent_id.strip() else "",
-            "base_url": _validated_base_url(base_url or DEFAULT_BASE_URL),
-            "auth_header": _require(HEADER_NAME_PATTERN, auth_header.strip(), "auth header name"),
-            "auth_scheme": auth_scheme.strip(),
-            "body_field": _require(BODY_FIELD_PATTERN, body_field.strip(), "request field name"),
-        }
+        parse_endpoint(endpoint)
+        if api_key and not KEY_PATTERN.match(api_key.strip()):
+            raise ActionRefusedError("Enter a Flockion runtime API key. It starts with flk_")
         with self._lock:
             raw = self._read()
-            raw.update(record)
+            raw["endpoint"] = endpoint.strip()
             if api_key == "":
                 raw.pop("key", None)
             elif api_key is not None:

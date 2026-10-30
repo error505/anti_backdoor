@@ -1,8 +1,8 @@
 import { downloadFile, http } from "./client";
 import type {
   ActionResult, ActivityEvent, AiAnalysis, AiProvider, AiProviderOptions, AiScheduleConfig, AiScheduleState, AiSettings, CaptureRecord, CaptureStatus, Connection,
-  ContextPreview, DefenderOverview, DefenderScanType, Finding, FirewallRule, FlockionMode, FlockionResult,
-  FlockionSettings, PersistenceEntry, ProcessDetail,
+  ContextPreview, DefenderOverview, DefenderScanType, Finding, FirewallRule, FlockionCheck, FlockionMode, FlockionResult,
+  FlockionSettings, IntelSettings, MalwareScanStatus, ScanScope, PersistenceEntry, ProcessDetail,
   ProcessInfo, QuarantineItem, ReportFormat, SourceHit, SystemStatus, TrafficSummary, UploadMethod,
 } from "./types";
 
@@ -85,13 +85,22 @@ export const aiApi = {
   stopSchedule: () => http.post<AiScheduleState>("/api/ai/schedule/stop"),
 };
 
+export const malwareApi = {
+  status: () => http.get<MalwareScanStatus>("/api/malware/status"),
+  scan: (scope: ScanScope, maxLookups: number) =>
+    http.post<MalwareScanStatus>("/api/malware/scan", { scope, max_lookups: maxLookups }),
+  settings: () => http.get<IntelSettings>("/api/malware/settings"),
+  saveKey: (apiKey: string) => http.post<IntelSettings>("/api/malware/settings", { api_key: apiKey }),
+  clearKey: () => http.post<ActionResult>("/api/malware/clear-key"),
+};
+
 export const flockionApi = {
   settings: () => http.get<FlockionSettings>("/api/flockion/settings"),
-  save: (settings: Omit<FlockionSettings, "has_stored_key" | "key_hint">, apiKey: string | null) =>
-    http.post<FlockionSettings>("/api/flockion/settings", { ...settings, api_key: apiKey }),
+  save: (endpoint: string, apiKey: string | null) =>
+    http.post<FlockionSettings>("/api/flockion/settings", { endpoint, api_key: apiKey }),
   clearKey: () => http.post<ActionResult>("/api/flockion/clear-key"),
   preview: (mode: FlockionMode) => http.post<ContextPreview>("/api/flockion/preview", { mode }),
-  test: () => http.post<FlockionResult>("/api/flockion/test"),
+  test: () => http.post<FlockionCheck>("/api/flockion/test"),
   send: (mode: FlockionMode) => http.post<FlockionResult>("/api/flockion/send", { mode }),
 };
 

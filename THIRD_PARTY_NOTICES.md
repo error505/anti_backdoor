@@ -11,6 +11,7 @@ components below, each under its own license. Run `pip-licenses` (backend) or
 | Pydantic | Data models | MIT |
 | Scapy | Optional packet inspection | GPL-2.0 (used as an optional, separately installed library) |
 | anthropic, openai (Python SDKs) | Optional AI analysis | MIT / Apache-2.0 |
+| websockets | Flockion agent connection | BSD-3-Clause |
 | React, React DOM | Frontend | MIT |
 | TanStack Query | Frontend data fetching | MIT |
 | react-markdown | Renders AI output | MIT |

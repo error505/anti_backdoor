@@ -4,6 +4,7 @@ from collections.abc import Sequence
 from backdoor_watch.analysis.checks.defender_checks import (check_defender_detections,
                                                             check_defender_protection)
 from backdoor_watch.analysis.checks.file_checks import check_ioc_paths
+from backdoor_watch.analysis.checks.malware_checks import check_malware_hits
 from backdoor_watch.analysis.checks.network_checks import (check_exposed_listeners,
                                                            check_outbound_by_risky_processes,
                                                            check_suspicious_ports)
@@ -29,6 +30,7 @@ DEFAULT_CHECKS: tuple[ThreatCheck, ...] = (
     check_persistence,
     check_defender_detections,
     check_defender_protection,
+    check_malware_hits,
 )
 
 
