@@ -1,0 +1,94 @@
+/* Decorative motion: backdrop, glitch title, boot intro, page transitions. All disabled for reduced motion. */
+
+/* ---------- backdrop ---------- */
+.backdrop { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.backdrop-glow { position: absolute; width: 70vmax; height: 70vmax; border-radius: 50%; filter: blur(60px); opacity: 0.22; }
+.backdrop-glow-a { top: -35vmax; left: -25vmax; background: radial-gradient(circle, rgba(var(--accent-rgb), 0.55), transparent 65%); animation: drift-a 22s ease-in-out infinite alternate; }
+.backdrop-glow-b { bottom: -40vmax; right: -25vmax; background: radial-gradient(circle, rgba(var(--accent-2-rgb), 0.45), transparent 65%); animation: drift-b 26s ease-in-out infinite alternate; }
+.backdrop-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(var(--accent-rgb), 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(var(--accent-rgb), 0.045) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+.backdrop-floor {
+  position: absolute; left: -50%; right: -50%; bottom: -10%; height: 55%;
+  background-image:
+    linear-gradient(rgba(var(--accent-rgb), 0.16) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(var(--accent-rgb), 0.16) 1px, transparent 1px);
+  background-size: 60px 60px;
+  transform: perspective(500px) rotateX(62deg);
+  transform-origin: center top;
+  mask-image: linear-gradient(to bottom, transparent, black 40%);
+  animation: floor-scroll 4s linear infinite;
+  opacity: 0.55;
+}
+.backdrop-scanlines { position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.28) 0 1px, transparent 1px 3px); opacity: 0.45; }
+.backdrop-sweep {
+  position: absolute; left: 0; right: 0; height: 120px; top: -120px;
+  background: linear-gradient(180deg, transparent, rgba(var(--accent-rgb), 0.06), transparent);
+  animation: sweep 9s linear infinite;
+}
+.backdrop-vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.7)); }
+
+/* ---------- glitch title ---------- */
+.glitch { position: relative; }
+.glitch::before, .glitch::after {
+  content: attr(data-text); position: absolute; inset: 0; pointer-events: none; opacity: 0;
+}
+.glitch::before { color: var(--accent-2); animation: glitch-a 7s infinite steps(1); }
+.glitch::after { color: var(--accent); animation: glitch-b 7s infinite steps(1); }
+.brand:hover .glitch::before, .brand:hover .glitch::after { animation-duration: 0.6s; }
+
+/* ---------- boot intro ---------- */
+.boot {
+  position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; cursor: pointer;
+  background: radial-gradient(circle at center, #04121f, #010306 70%);
+  animation: boot-out 0.45s ease 2.15s forwards;
+}
+.boot-terminal { width: min(680px, calc(100% - 32px)); font: 14px/1.7 var(--mono); color: #9ff6c9; }
+.boot-line { opacity: 0; white-space: pre-wrap; text-shadow: 0 0 6px rgba(61, 255, 162, 0.6); animation: boot-line 0.25s ease forwards; }
+.boot-granted { margin-top: 8px; font: 700 20px var(--font-display); letter-spacing: 0.3em; color: var(--accent); text-shadow: 0 0 16px var(--accent); }
+.boot-granted::after { content: "_"; animation: blink 0.8s steps(1) infinite; }
+.boot-bar { height: 2px; margin-top: 16px; background: rgba(var(--accent-rgb), 0.15); overflow: hidden; }
+.boot-bar span { display: block; height: 100%; width: 100%; background: var(--accent); box-shadow: 0 0 10px var(--accent); transform-origin: left; animation: boot-progress 1.9s ease-out forwards; }
+
+/* ---------- transitions & pulses ---------- */
+.page-enter > * { animation: page-in 0.35s ease both; }
+.page-enter > *:nth-child(2) { animation-delay: 0.05s; }
+.page-enter > *:nth-child(3) { animation-delay: 0.1s; }
+.finding-critical { animation: critical-pulse 2s ease-in-out infinite; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes blip { 0%, 20% { opacity: 0; } 25% { opacity: 1; } 70%, 100% { opacity: 0; } }
+@keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(61, 255, 162, 0.7); } 70% { box-shadow: 0 0 0 8px rgba(61, 255, 162, 0); } 100% { box-shadow: 0 0 0 0 rgba(61, 255, 162, 0); } }
+@keyframes critical-pulse { 0%, 100% { box-shadow: 0 0 0 rgba(var(--critical-rgb), 0); } 50% { box-shadow: 0 0 22px rgba(var(--critical-rgb), 0.45); } }
+@keyframes tile-sweep { 0%, 70% { left: -60%; } 100% { left: 130%; } }
+@keyframes drift-a { to { transform: translate(12vmax, 8vmax); } }
+@keyframes drift-b { to { transform: translate(-10vmax, -6vmax); } }
+@keyframes floor-scroll { to { background-position: 0 60px; } }
+@keyframes sweep { to { top: 100%; } }
+@keyframes fade-in { from { opacity: 0; } }
+@keyframes drawer-in { from { transform: translateX(40px); opacity: 0; } }
+@keyframes toast-in { from { transform: translateX(30px); opacity: 0; } }
+@keyframes page-in { from { opacity: 0; transform: translateY(8px); } }
+@keyframes boot-line { from { opacity: 0; transform: translateX(-6px); } to { opacity: 1; transform: none; } }
+@keyframes boot-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes boot-out { to { opacity: 0; visibility: hidden; } }
+@keyframes blink { 50% { opacity: 0; } }
+@keyframes glitch-a {
+  0%, 93%, 100% { opacity: 0; transform: none; }
+  94% { opacity: 0.8; transform: translate(-2px, 1px); clip-path: inset(10% 0 55% 0); }
+  96% { opacity: 0.8; transform: translate(2px, -1px); clip-path: inset(60% 0 10% 0); }
+}
+@keyframes glitch-b {
+  0%, 94%, 100% { opacity: 0; transform: none; }
+  95% { opacity: 0.8; transform: translate(2px, 0); clip-path: inset(40% 0 30% 0); }
+  97% { opacity: 0.8; transform: translate(-2px, 1px); clip-path: inset(5% 0 75% 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .boot { display: none; }
+}

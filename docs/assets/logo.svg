@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="256" height="256" role="img" aria-label="Flockion Backdoor Watch logo">
+  <defs>
+    <linearGradient id="fw-shield" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0b2a44"/>
+      <stop offset="1" stop-color="#03101c"/>
+    </linearGradient>
+    <linearGradient id="fw-rim" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#00e5ff"/>
+      <stop offset="1" stop-color="#ff2bd6"/>
+    </linearGradient>
+    <radialGradient id="fw-sweep" cx="32" cy="33" r="15" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#00e5ff" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#00e5ff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <path d="M32 3 57 12.5V32c0 14.5-10.2 24.5-25 29.5C17.200 56.500 7 46.500 7 32V12.500Z"
+        fill="url(#fw-shield)" stroke="url(#fw-rim)" stroke-width="2.500" stroke-linejoin="round"/>
+  <g fill="none" stroke="#00e5ff" stroke-opacity="0.55" stroke-width="1">
+    <circle cx="32" cy="33" r="15"/>
+    <circle cx="32" cy="33" r="8"/>
+    <path d="M32 18v30M17 33h30" stroke-opacity="0.3"/>
+  </g>
+  <path d="M32 33 32 18A15 15 0 0 1 44.990 25.500Z" fill="url(#fw-sweep)" class="sweep"/>
+  <path d="M32 33 32 18" stroke="#9ff6ff" stroke-width="1.500" stroke-linecap="round"/>
+  <circle cx="39" cy="40" r="2.300" fill="#ff2bd6"/>
+  <circle cx="39" cy="40" r="4.500" fill="none" stroke="#ff2bd6" stroke-opacity="0.5" stroke-width="1"/>
+  <circle cx="32" cy="33" r="1.600" fill="#eaffff"/>
+</svg>

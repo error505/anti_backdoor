@@ -1,0 +1,9 @@
+fastapi>=0.115
+uvicorn>=0.32
+psutil>=7.1
+pydantic>=2.12
+# AI analysis (optional at runtime: only used when you configure a provider)
+anthropic>=2.3
+openai>=3.0
+# Optional: live packet inspection (DNS / TLS SNI / plaintext HTTP). Requires Npcap: https://npcap.com
+scapy>=2.6

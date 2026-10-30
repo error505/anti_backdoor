@@ -1,0 +1,61 @@
+{
+  "_comment": "Indicators for the 'Contagious Interview' fake-job-interview campaign (BeaverTail / InvisibleFerret / OtterCookie / JADESNOW) plus generic backdoor heuristics. Sources: Microsoft Security Blog 2026-03-11, Malpedia, public vendor reports. Patterns are case-insensitive regular expressions.",
+
+  "suspicious_remote_ports": [
+    { "port": 1224, "severity": "high", "reason": "BeaverTail / InvisibleFerret C2 port reported in Contagious Interview campaigns" },
+    { "port": 1244, "severity": "high", "reason": "BeaverTail / InvisibleFerret C2 port reported in Contagious Interview campaigns" },
+    { "port": 1245, "severity": "high", "reason": "BeaverTail / InvisibleFerret C2 port reported in Contagious Interview campaigns" },
+    { "port": 2245, "severity": "high", "reason": "InvisibleFerret backdoor command channel port reported in public analyses" },
+    { "port": 3306, "severity": "medium", "reason": "JADESNOW / InvisibleFerret JS beacon port reported in 2026 (also normal MySQL)" },
+    { "port": 4444, "severity": "high", "reason": "Default reverse-shell / Metasploit port" }
+  ],
+
+  "cmdline_rules": [
+    { "id": "beaconing-agent", "severity": "critical", "pattern": "(?=.*handleCode)(?=.*AgentId)(?=.*SERVER_IP)", "title": "Node beaconing agent (Contagious Interview)" },
+    { "id": "ottercookie-socket", "severity": "critical", "pattern": "(?=.*axios)(?=.*socket\\.io)(?=.*(clipboard|const uid))", "title": "OtterCookie-style Node backdoor" },
+    { "id": "ottercookie-scanner", "severity": "critical", "pattern": "(?=.*scanDir)(?=.*POST)(?=.*(excludeFolders|curl ))", "title": "OtterCookie-style file stealer" },
+    { "id": "credential-hunt", "severity": "high", "pattern": "findstr /v.*(wallet|seed|mnemonic|1pass|private)", "title": "Searching disk for wallets / secrets" },
+    { "id": "invisibleferret-paths", "severity": "critical", "pattern": "(\\.n2[/\\\\](pay|bow|mlip)|\\.npl\\b|[/\\\\]pdown\\b|\\.sysinfo\\b|\\.pyp[/\\\\])", "title": "InvisibleFerret module path in command line" },
+    { "id": "download-pipe-shell", "severity": "high", "pattern": "(curl|wget|iwr|invoke-webrequest|irm|invoke-restmethod)[^|]*\\|\\s*(cmd|sh|bash|iex|invoke-expression|powershell)", "title": "Download piped straight into a shell" },
+    { "id": "payload-host", "severity": "high", "pattern": "(\\.vercel\\.app|short\\.gy|npoint\\.io|jsonkeeper\\.com|api\\.jsonbin\\.io)", "title": "Fetches code from a host abused by this campaign" },
+    { "id": "node-vm-check", "severity": "medium", "pattern": "(?=.*node)(?=.*(qemu|virtualbox|vmware|parallels))", "title": "Node process checking for virtual machines" },
+    { "id": "spy-packages", "severity": "high", "pattern": "(node-global-key-listener|screenshot-desktop)", "title": "Keylogger / screenshot package in use" },
+    { "id": "hidden-clipboard", "severity": "high", "pattern": "(?=.*-w(indowstyle)?\\s+hidden)(?=.*clipboard)", "title": "Hidden PowerShell reading the clipboard" },
+    { "id": "encoded-powershell", "severity": "medium", "pattern": "powershell.*\\s-(e|en|enc|enco|encod|encode|encodedcommand)\\s+[A-Za-z0-9+/=]{40,}", "title": "Encoded PowerShell command" }
+  ],
+
+  "ioc_paths": [
+    { "path": "%USERPROFILE%\\.n2", "severity": "critical", "reason": "InvisibleFerret drop folder (pay / bow / mlip modules)" },
+    { "path": "%USERPROFILE%\\.n3", "severity": "high", "reason": "InvisibleFerret variant drop folder" },
+    { "path": "%USERPROFILE%\\.npl", "severity": "critical", "reason": "InvisibleFerret main loader" },
+    { "path": "%USERPROFILE%\\.pyp", "severity": "critical", "reason": "Portable Python downloaded by BeaverTail to run InvisibleFerret" },
+    { "path": "%USERPROFILE%\\.sysinfo", "severity": "high", "reason": "Host fingerprint file written by the campaign's Python stage" },
+    { "path": "%TEMP%\\p.zi", "severity": "high", "reason": "BeaverTail Python archive download" },
+    { "path": "%TEMP%\\p2.zip", "severity": "high", "reason": "BeaverTail Python archive download" }
+  ],
+
+  "script_hosts": ["node.exe", "python.exe", "pythonw.exe", "py.exe", "powershell.exe", "pwsh.exe", "wscript.exe", "cscript.exe", "mshta.exe", "rundll32.exe", "regsvr32.exe", "cmd.exe", "bun.exe", "deno.exe"],
+
+  "user_writable_dirs": ["%TEMP%", "%LOCALAPPDATA%\\Temp", "%APPDATA%", "%USERPROFILE%\\Downloads", "%PUBLIC%", "%USERPROFILE%\\Desktop"],
+
+  "remote_access_tools": ["anydesk", "teamviewer", "rustdesk", "screenconnect", "connectwise", "atera", "ammyy", "ultraviewer", "splashtop", "rutserv", "tightvnc", "winvnc", "tvnserver", "meshagent", "ngrok", "cloudflared", "chisel"],
+
+  "protected_processes": ["system", "registry", "smss.exe", "csrss.exe", "wininit.exe", "winlogon.exe", "services.exe", "lsass.exe", "lsaiso.exe", "svchost.exe", "fontdrvhost.exe", "dwm.exe", "memory compression", "secure system"],
+
+  "source_patterns": [
+    { "id": "eval", "severity": "medium", "pattern": "\\beval\\s*\\(", "description": "eval() executes strings as code" },
+    { "id": "function-constructor", "severity": "high", "pattern": "\\bnew\\s+Function\\s*\\(|Function\\.constructor|\\(\\s*0\\s*,\\s*eval\\s*\\)", "description": "Builds and runs code from strings (common remote-code loader)" },
+    { "id": "child-process", "severity": "medium", "pattern": "require\\(\\s*['\"](node:)?child_process['\"]\\s*\\)|from\\s+['\"](node:)?child_process['\"]", "description": "Spawns system commands" },
+    { "id": "payload-host", "severity": "high", "pattern": "(\\.vercel\\.app|short\\.gy|npoint\\.io|jsonkeeper\\.com|api\\.jsonbin\\.io|pastebin\\.com/raw)", "description": "Host abused to serve second-stage code" },
+    { "id": "raw-ip-url", "severity": "high", "pattern": "https?://(?!(127\\.|0\\.0\\.0\\.0|10\\.|192\\.168\\.|169\\.254\\.|172\\.(1[6-9]|2\\d|3[01])\\.))\\d{1,3}(\\.\\d{1,3}){3}(:\\d+)?", "description": "URL to a public raw IP address (typical C2)" },
+    { "id": "base64-decode", "severity": "medium", "pattern": "Buffer\\.from\\([^)]*['\"]base64['\"]|\\batob\\s*\\(|b64decode", "description": "Decodes base64 (often hides URLs or code)" },
+    { "id": "spy-packages", "severity": "high", "pattern": "node-global-key-listener|screenshot-desktop", "description": "Keylogger / screenshot package" },
+    { "id": "vscode-autorun", "severity": "high", "pattern": "\"runOn\"\\s*:\\s*\"folderOpen\"", "description": "VS Code task that runs automatically when the folder is opened" },
+    { "id": "wallet-targeting", "severity": "high", "pattern": "nkbihfbeogaeaoehlefnkodbefgpgknn|bfnaelmomeimhlpmgjnjophhpkkoljpa|Local Extension Settings|Login Data|\\.n2[/\\\\]|\\.npl\\b|\\.pyp[/\\\\]", "description": "Targets browser wallets / saved passwords or uses InvisibleFerret paths" },
+    { "id": "npm-lifecycle", "severity": "medium", "pattern": "\"(preinstall|install|postinstall|prepare)\"\\s*:", "description": "npm script that runs automatically on install" },
+    { "id": "curl-pipe", "severity": "high", "pattern": "(curl|wget)[^\\n|]*\\|\\s*(sh|bash|cmd)", "description": "Download piped into a shell" },
+    { "id": "hidden-window", "severity": "medium", "pattern": "windowsHide\\s*:\\s*true", "description": "Hides spawned process windows" },
+    { "id": "host-fingerprint", "severity": "low", "pattern": "os\\.(hostname|userInfo|platform|release)\\s*\\(\\s*\\)", "description": "Collects host fingerprint" },
+    { "id": "socketio-client", "severity": "low", "pattern": "socket\\.io-client", "description": "Persistent socket channel (used by OtterCookie)" }
+  ]
+}

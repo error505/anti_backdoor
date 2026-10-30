@@ -1,0 +1,33 @@
+:root {
+  --bg: #03060c;
+  --surface: rgba(7, 18, 31, 0.74);
+  --surface-2: rgba(12, 30, 50, 0.82);
+  --surface-solid: #081422;
+  --border: rgba(0, 229, 255, 0.16);
+  --border-strong: rgba(0, 229, 255, 0.5);
+  --text: #d6f4ff;
+  --muted: #7896ab;
+
+  --accent: #00e5ff;
+  --accent-rgb: 0, 229, 255;
+  --accent-2: #ff2bd6;
+  --accent-2-rgb: 255, 43, 214;
+
+  --ok: #3dffa2;
+  --info: #4fc3ff;
+  --low: #a3b8cc;
+  --medium: #ffd23f;
+  --high: #ff8f3f;
+  --critical: #ff3b5c;
+  --critical-rgb: 255, 59, 92;
+
+  --glow-sm: 0 0 8px rgba(var(--accent-rgb), 0.35);
+  --glow-md: 0 0 18px rgba(var(--accent-rgb), 0.28), inset 0 0 18px rgba(var(--accent-rgb), 0.05);
+
+  --radius: 3px;
+  --gap: 16px;
+  --font-display: "Orbitron", "Segoe UI", sans-serif;
+  --font-ui: "Rajdhani", "Segoe UI", system-ui, sans-serif;
+  --mono: "Share Tech Mono", "Cascadia Code", Consolas, monospace;
+  color-scheme: dark;
+}
