@@ -52,6 +52,19 @@ Every TCP/UDP connection with the owning process, remote host name (from DNS), s
 received (needs administrator rights; counting starts when the monitor first sees a connection). Filter by
 process, IP, host or port; block an IP or kill the owner from the row.
 
+### IP intelligence (who owns the server)
+
+Tick **Identify server owners** to add an **Owner** column: organisation, ASN, city and country, reverse DNS, and a
+**cloud** badge for rented hosting networks (where attacker servers often live, and so do most legitimate
+services). It is **off by default**, because a lookup tells the provider that you are talking to that address.
+Only **public IP addresses** are sent (never ports, process names or file contents), over HTTPS to
+[ipwho.is](https://ipwho.is) (free, no key, about 10,000 lookups a month). Answers are cached in
+`backend/data/ip_intel_cache.json` for 30 days. Failed lookups are not cached, so a rate limit just retries later.
+
+When it is on, the same data goes into AI and Flockion analyses (`remote_server_intel`), and those answers show an
+owner chip beside each IP plus a table of the servers they mention. Registration data says who rents an address, not
+what it is used for: a `cloud` badge is context, not evidence.
+
 ## Open ports
 
 ![Open ports](screenshots/listeners.png)
@@ -109,6 +122,10 @@ is normal for your own builds, and worth a look for anything unexpected in Temp 
 ## AI analysis and AI Watch
 
 ![AI analysis](screenshots/ai.png)
+
+Answers are laid out as a verdict banner, then sections: each item to act on is a card with its evidence and a green
+**Action** line, IP addresses carry an owner chip, and the servers named are listed in a table (owners need
+[IP intelligence](#ip-intelligence-who-owns-the-server) switched on).
 
 1. Choose **Provider**, **Model** and **Effort**, paste the API key, **Save**. The key is encrypted with Windows
    DPAPI and never sent to the browser. Without a stored key the backend reads `ANTHROPIC_API_KEY` or
@@ -204,6 +221,7 @@ when Defender is the active antivirus and Tamper Protection allows it.
 | `backend/data/quarantine/` | Quarantined files (no extension) and manifests with SHA-256 |
 | `backend/data/backups/` | Backups of removed autostart entries |
 | `backend/data/ai_settings.json`, `flockion_settings.json`, `intel_settings.json` | Provider choices and DPAPI-encrypted keys |
+| `backend/data/ip_intel_settings.json`, `ip_intel_cache.json` | IP-intelligence opt-in and cached owner lookups |
 | `backend/data/known_bad_hashes.txt`, `virustotal_cache.json` | Your known-bad hash list; cached VirusTotal answers |
 | `backend/data/ai_schedule.json`, `ai_history.jsonl` | AI Watch schedule and the last 50 analyses |
 

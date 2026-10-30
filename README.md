@@ -37,6 +37,9 @@ connector can review the findings for you.
 - **Malware scan:** hashes running and autostart programs (and optionally files in Downloads, Desktop, Temp) and
   checks them against your own known-bad list and **VirusTotal** (hash only, files are never uploaded), with one-click
   Defender scans. It complements, and does not replace, your antivirus.
+- **IP intelligence (opt-in):** see who owns each remote server (organisation, ASN, country, cloud or hosting
+  network). Only public IP addresses are sent, to ipwho.is over HTTPS, and answers are cached for 30 days. The
+  owners also appear in AI and Flockion answers next to every IP they mention.
 - **AI Watch:** let Claude or an OpenAI model review a redacted snapshot on a timer, for a limited time, skipping
   runs when nothing changed so you do not burn tokens.
 - **Reports and integrations:** HTML/Markdown/JSON reports, upload to S3/Azure/GCS with a pre-signed URL or a

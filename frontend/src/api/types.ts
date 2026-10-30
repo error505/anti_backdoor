@@ -345,3 +345,27 @@ export interface ActionResult {
 }
 
 export type DefenderScanType = "QuickScan" | "FullScan" | "CustomScan";
+
+export interface IpIntel {
+  ip: string;
+  country: string | null;
+  country_code: string | null;
+  region: string | null;
+  city: string | null;
+  org: string | null;
+  asn: string | null;
+  reverse_dns: string | null;
+  cloud_hosting: boolean;
+  error: string | null;
+}
+
+export interface IpIntelBatch {
+  enabled: boolean;
+  results: IpIntel[];
+}
+
+export interface IpIntelSettings {
+  enabled: boolean;
+  provider: string;
+  cached_addresses: number;
+}

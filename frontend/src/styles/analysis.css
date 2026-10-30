@@ -1,0 +1,71 @@
+/* ---------- AI / agent answers ---------- */
+.analysis { border-top: 1px solid var(--border); margin-top: 12px; padding-top: 10px; }
+.analysis-body { line-height: 1.6; max-width: 980px; }
+
+.verdict-hero {
+  --tone: var(--muted);
+  display: flex; align-items: center; gap: 16px; margin: 6px 0 14px; padding: 14px 18px;
+  border: 1px solid color-mix(in srgb, var(--tone) 55%, transparent);
+  border-left: 4px solid var(--tone);
+  background: linear-gradient(100deg, color-mix(in srgb, var(--tone) 16%, transparent), rgba(4, 12, 22, 0.55) 70%);
+  box-shadow: 0 0 22px color-mix(in srgb, var(--tone) 22%, transparent);
+}
+.verdict-critical { --tone: var(--critical); }
+.verdict-high { --tone: var(--high); }
+.verdict-ok { --tone: var(--ok); }
+.verdict-icon { font-size: 30px; line-height: 1; color: var(--tone); text-shadow: 0 0 14px var(--tone); }
+.verdict-title { font: 700 18px var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; color: var(--tone); text-shadow: 0 0 10px color-mix(in srgb, var(--tone) 60%, transparent); }
+
+.analysis-body h1, .analysis-body h2, .analysis-body h3 {
+  display: flex; align-items: center; gap: 10px; margin: 24px 0 10px; padding-bottom: 6px;
+  font: 600 13px var(--font-display); letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent);
+  border-bottom: 1px solid var(--border);
+}
+.analysis-body h2::before { content: ""; width: 8px; height: 8px; background: var(--accent-2); box-shadow: 0 0 10px var(--accent-2); transform: rotate(45deg); }
+.analysis-body p { margin: 8px 0; }
+.analysis-body strong { color: #fff; }
+.analysis-body em { color: var(--text); }
+.analysis-body blockquote { margin: 10px 0; padding: 6px 14px; border-left: 3px solid var(--accent-2); color: var(--muted); background: rgba(var(--accent-2-rgb), 0.05); }
+.analysis-body code { font-family: var(--mono); font-size: 12.5px; color: #9ff6c9; background: rgba(0, 0, 0, 0.5); padding: 1px 6px; border: 1px solid rgba(61, 255, 162, 0.12); }
+.analysis-body pre { background: rgba(0, 0, 0, 0.5); padding: 10px; overflow: auto; }
+.analysis-body pre code { border: none; padding: 0; background: none; }
+.analysis-body a { color: var(--accent); }
+
+.analysis-body ul, .analysis-body ol { margin: 8px 0; padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.analysis-body ol { counter-reset: item; }
+.analysis-body > ul > li, .analysis-body > ol > li {
+  position: relative; padding: 10px 14px 10px 16px;
+  background: rgba(var(--accent-rgb), 0.04); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+}
+.analysis-body > ol > li { counter-increment: item; }
+.analysis-body > ol > li::before { content: counter(item); position: absolute; right: 10px; top: 6px; font: 11px var(--mono); color: var(--muted); }
+.analysis-body li > ul, .analysis-body li > ol { margin-top: 8px; gap: 6px; }
+.analysis-body li > ul > li, .analysis-body li > ol > li { padding-left: 14px; position: relative; }
+.analysis-body li > ul > li::before { content: "›"; position: absolute; left: 0; color: var(--accent); }
+
+.analysis-body .action-line {
+  margin-left: -2px; padding: 8px 12px 8px 14px;
+  background: rgba(61, 255, 162, 0.07); border: 1px solid rgba(61, 255, 162, 0.28); border-left: 3px solid var(--ok);
+}
+.analysis-body .action-line::before { content: none; }
+.analysis-body .action-line > strong:first-child, .analysis-body .action-line > p:first-child > strong:first-child {
+  color: var(--ok); text-transform: uppercase; letter-spacing: 0.1em; font-size: 12px; margin-right: 4px;
+}
+
+.analysis-body table { margin: 10px 0; }
+
+/* ---------- IP intelligence ---------- */
+.ip-chip {
+  display: inline-flex; align-items: stretch; vertical-align: baseline; white-space: nowrap;
+  border: 1px solid rgba(var(--accent-rgb), 0.4); background: rgba(0, 0, 0, 0.45);
+}
+.ip-chip code { border: none; background: none; color: var(--accent); }
+.ip-chip-owner { display: inline-flex; align-items: center; gap: 6px; padding: 0 8px; font-size: 12px; color: var(--text); background: rgba(var(--accent-rgb), 0.1); }
+.ip-chip-owner b { font: 700 11px var(--mono); color: var(--accent-2); }
+.ip-chip-cloud { border-color: rgba(255, 210, 63, 0.5); }
+.ip-chip-cloud .ip-chip-owner { background: rgba(255, 210, 63, 0.1); }
+
+.country-code { display: inline-block; min-width: 24px; margin-right: 8px; padding: 0 4px; text-align: center; font: 700 11px var(--mono); color: #001018; background: var(--accent); }
+.ip-owner { min-width: 190px; }
+.servers-mentioned { margin-top: 18px; }
+.servers-mentioned .table-wrap { margin-top: 8px; max-height: 300px; }

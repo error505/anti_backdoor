@@ -31,6 +31,14 @@ class Settings:
         return self.data_dir / "virustotal_cache.json"
 
     @property
+    def ip_intel_cache_path(self) -> Path:
+        return self.data_dir / "ip_intel_cache.json"
+
+    @property
+    def ip_intel_settings_path(self) -> Path:
+        return self.data_dir / "ip_intel_settings.json"
+
+    @property
     def known_bad_hashes_path(self) -> Path:
         return self.data_dir / "known_bad_hashes.txt"
 

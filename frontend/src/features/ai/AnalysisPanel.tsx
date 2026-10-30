@@ -1,12 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import Markdown from "react-markdown";
 import { aiApi } from "../../api/endpoints";
 import type { AiAnalysis } from "../../api/types";
 import { Badge } from "../../components/Badge";
 import { EmptyState, Notice, Panel, QueryState } from "../../components/Layout";
 import { useAiHistory } from "../../hooks/queries";
 import { formatBytes, formatEpoch } from "../../lib/format";
+import { AnalysisMarkdown } from "./AnalysisMarkdown";
 import { VerdictBadge } from "./VerdictBadge";
 
 export function AnalysisPanel() {
@@ -93,8 +93,7 @@ function AnalysisResult({ analysis }: { analysis: AiAnalysis }) {
         {analysis.provider} / {analysis.model} · effort {analysis.effort} · {formatEpoch(analysis.created_at)} · {formatBytes(analysis.context_chars)} sent
         {analysis.question && <> · question: “{analysis.question}”</>}
       </p>
-      {/* react-markdown never renders raw HTML, so attacker strings quoted by the model stay inert. */}
-      <Markdown>{analysis.markdown}</Markdown>
+      <AnalysisMarkdown markdown={analysis.markdown} fallbackVerdict={analysis.verdict} />
       <p className="muted small">AI output can be wrong. Check its claims against the Findings and Processes tabs before you act.</p>
     </article>
   );

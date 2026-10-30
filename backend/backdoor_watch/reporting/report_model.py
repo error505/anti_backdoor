@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from backdoor_watch.domain.activity import ActivityEvent
 from backdoor_watch.domain.ai import AiAnalysis
 from backdoor_watch.domain.findings import Finding
+from backdoor_watch.domain.ip_intel import IpIntel
 from backdoor_watch.domain.network import ProcessTraffic, RemoteTraffic
 from backdoor_watch.domain.persistence import PersistenceEntry
 from backdoor_watch.domain.security_tools import DefenderStatus, DefenderThreat
@@ -48,4 +49,5 @@ class SecurityReport(BaseModel):
     traffic_by_process: list[ProcessTraffic]
     traffic_by_remote: list[RemoteTraffic]
     notable_events: list[ActivityEvent]
+    remote_server_intel: list[IpIntel] = []
     ai_analysis: AiAnalysis | None = None

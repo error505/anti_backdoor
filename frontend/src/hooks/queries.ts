@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
+﻿import { useQuery } from "@tanstack/react-query";
 import {
-  aiApi, captureApi, defenderApi, flockionApi, malwareApi, firewallApi, networkApi, processApi, quarantineApi, systemApi, threatApi,
+  aiApi, captureApi, defenderApi, flockionApi, intelApi, malwareApi, firewallApi, networkApi, processApi, quarantineApi, systemApi, threatApi,
 } from "../api/endpoints";
 
 const LIVE = 2000;
@@ -71,3 +71,17 @@ export function useSelfPids(): Set<number> {
 
 export const useCaptureRecords = (limit: number) =>
   useQuery({ queryKey: ["capture", limit], queryFn: () => captureApi.records(limit), refetchInterval: LIVE });
+
+export const useIpIntelSettings = () => useQuery({ queryKey: ["ip-intel-settings"], queryFn: intelApi.settings });
+
+/** Owner, country and network of remote servers. Cached answers come back even while lookups are switched off. */
+export const useIpIntel = (ips: string[]) => {
+  const wanted = [...new Set(ips)].sort().slice(0, 50);
+  return useQuery({
+    queryKey: ["ip-intel", wanted],
+    queryFn: () => intelApi.lookup(wanted),
+    enabled: wanted.length > 0,
+    staleTime: 5 * 60_000,
+    select: (batch) => new Map(batch.results.map((intel) => [intel.ip, intel])),
+  });
+};

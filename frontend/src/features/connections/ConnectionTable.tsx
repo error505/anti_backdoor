@@ -1,10 +1,11 @@
-import type { Connection } from "../../api/types";
+import type { Connection, IpIntel } from "../../api/types";
 import { ActionBar } from "../../components/ActionButton";
 import { Badge } from "../../components/Badge";
 import { EmptyState } from "../../components/Layout";
 import { formatBytes, formatEndpoint } from "../../lib/format";
 import type { ActionSpec } from "../../hooks/useActionRunner";
 import { blockIp, killProcess } from "../actions/actionCatalog";
+import { IpOwner } from "../intel/IpOwner";
 import { ProcessLink } from "../processes/ProcessInspector";
 
 const MAX_ROWS = 500;
@@ -16,7 +17,14 @@ function connectionActions(conn: Connection, includeKill: boolean): ActionSpec[]
   return actions;
 }
 
-export function ConnectionTable({ connections, showProcess = true }: { connections: Connection[]; showProcess?: boolean }) {
+interface ConnectionTableProps {
+  connections: Connection[];
+  showProcess?: boolean;
+  /** Server owners by IP; when given, an Owner column is shown. */
+  intel?: Map<string, IpIntel>;
+}
+
+export function ConnectionTable({ connections, showProcess = true, intel }: ConnectionTableProps) {
   if (connections.length === 0) return <EmptyState>No connections.</EmptyState>;
   return (
     <div className="table-wrap">
@@ -27,6 +35,7 @@ export function ConnectionTable({ connections, showProcess = true }: { connectio
             <th>Proto</th>
             <th>Local</th>
             <th>Remote</th>
+            {intel && <th>Owner</th>}
             <th>State</th>
             <th className="num">Sent</th>
             <th className="num">Received</th>
@@ -44,6 +53,7 @@ export function ConnectionTable({ connections, showProcess = true }: { connectio
                 {conn.remote_host && <div className="muted">{conn.remote_ip}</div>}
                 {conn.is_external && <> <Badge tone="info">internet</Badge></>}
               </td>
+              {intel && <td>{conn.is_external && conn.remote_ip ? <IpOwner intel={intel.get(conn.remote_ip)} /> : null}</td>}
               <td>{conn.state}</td>
               <td className="num">{formatBytes(conn.bytes_out)}</td>
               <td className="num">{formatBytes(conn.bytes_in)}</td>

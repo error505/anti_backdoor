@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import Markdown from "react-markdown";
 import { flockionApi } from "../../api/endpoints";
 import type { FlockionMode, FlockionSettings } from "../../api/types";
 import { ActionButton } from "../../components/ActionButton";
@@ -9,6 +8,7 @@ import { Panel, QueryState } from "../../components/Layout";
 import { useToast } from "../../components/Toasts";
 import { useFlockionSettings } from "../../hooks/queries";
 import { formatBytes } from "../../lib/format";
+import { AnalysisMarkdown } from "../ai/AnalysisMarkdown";
 import { FlockionGuide } from "./FlockionGuide";
 
 export function FlockionPanel() {
@@ -100,8 +100,7 @@ function FlockionForm({ current }: { current: FlockionSettings }) {
             {send.data.cost_usd !== null && <> · ${send.data.cost_usd.toFixed(3)} · {send.data.total_tokens ?? "?"} tokens</>}
             {send.data.denied_tool_requests > 0 && <> · {send.data.denied_tool_requests} tool requests denied</>}
           </p>
-          {/* react-markdown never renders raw HTML, so agent output stays inert text. */}
-          <Markdown>{send.data.output}</Markdown>
+          <AnalysisMarkdown markdown={send.data.output} />
         </article>
       )}
     </div>

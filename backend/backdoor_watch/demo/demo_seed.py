@@ -25,11 +25,16 @@ outbound connection to `203.0.113.45:1224`, a combination that matches the Invis
 delivered after a malicious Node.js "interview task".
 
 ## Items to act on
-- **python.exe (PID 3377)**: launched by `node.exe` (PID 2301), which Code.exe started from the
-  `interview-task` folder. Action: *Kill tree*, then quarantine `.pyp` and `.n2`.
-- **203.0.113.45:1224**: raw IP on a port reported for this campaign. Action: *Block IP*.
-- **Run key `SystemUpdateCheck`**: relaunches the same interpreter at every logon. Action: *Remove autostart*.
-- **AnyDesk.exe**: installed from the user profile in the same time window. Action: kill and uninstall.
+- **Kill the Python backdoor (`python.exe`, PID 3377).** Launched by `node.exe` (PID 2301), which `Code.exe` started from the
+  `interview-task` folder; it runs `.n2\\pay` from `.pyp`.
+  - **Action:** *Kill tree* on PID 3377, then *Quarantine* `.pyp` and `.n2`.
+- **Block the server `203.0.113.45:1224` (Example VPS Hosting, NL).** A raw IP on a port reported for this campaign, rented
+  hosting, with 18 MB sent out.
+  - **Action:** *Block IP* `203.0.113.45`.
+- **Remove the Run key `SystemUpdateCheck`.** It relaunches the same interpreter at every logon.
+  - **Action:** *Remove autostart*.
+- **Check `AnyDesk.exe`.** Installed from the user profile in the same time window; `198.51.100.77` (Sample Cloud Servers, DE) also received 0.6 MB.
+  - **Action:** kill and uninstall it, then *Block IP* `198.51.100.77` if you did not set it up.
 
 ## Likely false positives
 - `postgres.exe` and `node.exe` on 5173: normal development servers, unsigned or user-installed.
@@ -38,7 +43,8 @@ delivered after a malicious Node.js "interview task".
 TLS content is not visible, and credentials stolen in the first seconds cannot be seen here.
 
 ## Next steps
-1. Rotate passwords, tokens and SSH keys from a clean device. 2. Move wallet funds to a new wallet.
+1. Rotate passwords, tokens and SSH keys from a clean device.
+2. Move wallet funds to a new wallet.
 3. Back up documents and reinstall Windows if you want certainty.
 """
 
@@ -95,6 +101,7 @@ def seed_demo(services: "AppServices") -> None:
                                        signatures_updated="2026-10-29T23:54:17+01:00"),
     )
     _seed_traffic(services, connections)
+    services.ip_intel.set_enabled(True)
     services.events.extend(_events())
     services.analysis_archive.store(AiAnalysis(
         provider=AiProvider.ANTHROPIC, model="claude-opus-5-5", effort="high", question=None,

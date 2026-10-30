@@ -1,8 +1,9 @@
 import { useState } from "react";
 import type { Connection } from "../../api/types";
 import { Panel, QueryState, SearchBox, Toggle } from "../../components/Layout";
-import { useConnections } from "../../hooks/queries";
+import { useConnections, useIpIntel } from "../../hooks/queries";
 import { matchesQuery } from "../../lib/format";
+import { IpIntelToggle } from "../intel/IpIntelToggle";
 import { ConnectionTable } from "./ConnectionTable";
 
 interface ConnectionFilter {
@@ -38,9 +39,16 @@ export function ConnectionsPage() {
         Who is talking to whom right now. Host names come from DNS. Byte counts start when the monitor first
         sees a connection and need administrator rights.
       </p>
+      <IpIntelToggle />
       <QueryState query={connections}>
-        {(data) => <ConnectionTable connections={filterConnections(data, filter)} />}
+        {(data) => <FilteredConnections connections={filterConnections(data, filter)} />}
       </QueryState>
     </Panel>
   );
+}
+
+function FilteredConnections({ connections }: { connections: Connection[] }) {
+  const remoteIps = connections.filter((c) => c.is_external && c.remote_ip).map((c) => c.remote_ip as string);
+  const intel = useIpIntel(remoteIps);
+  return <ConnectionTable connections={connections} intel={intel.data ?? new Map()} />;
 }

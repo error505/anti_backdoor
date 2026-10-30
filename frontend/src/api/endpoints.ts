@@ -1,7 +1,7 @@
-import { downloadFile, http } from "./client";
+﻿import { downloadFile, http } from "./client";
 import type {
   ActionResult, ActivityEvent, AiAnalysis, AiProvider, AiProviderOptions, AiScheduleConfig, AiScheduleState, AiSettings, CaptureRecord, CaptureStatus, Connection,
-  ContextPreview, DefenderOverview, DefenderScanType, Finding, FirewallRule, FlockionCheck, FlockionMode, FlockionResult,
+  ContextPreview, DefenderOverview, IpIntelBatch, IpIntelSettings, DefenderScanType, Finding, FirewallRule, FlockionCheck, FlockionMode, FlockionResult,
   FlockionSettings, IntelSettings, MalwareScanStatus, ScanScope, PersistenceEntry, ProcessDetail,
   ProcessInfo, QuarantineItem, ReportFormat, SourceHit, SystemStatus, TrafficSummary, UploadMethod,
 } from "./types";
@@ -108,4 +108,11 @@ export const reportApi = {
   download: (format: ReportFormat, redact: boolean) => downloadFile(`/api/report?format=${format}&redact=${redact}`),
   upload: (url: string, method: UploadMethod, format: ReportFormat, redact: boolean) =>
     http.post<ActionResult>("/api/report/upload", { url, method, format, redact }),
+};
+
+export const intelApi = {
+  settings: () => http.get<IpIntelSettings>("/api/intel/settings"),
+  saveSettings: (enabled: boolean) => http.post<IpIntelSettings>("/api/intel/settings", { enabled }),
+  lookup: (ips: string[]) =>
+    http.get<IpIntelBatch>(`/api/intel/ips?${ips.map((ip) => `ip=${encodeURIComponent(ip)}`).join("&")}`),
 };

@@ -100,8 +100,3 @@
 }
 details summary { cursor: pointer; color: var(--accent); font-family: var(--mono); font-size: 12.5px; }
 
-.analysis { border-top: 1px solid var(--border); margin-top: 12px; padding-top: 8px; line-height: 1.6; }
-.analysis h1, .analysis h2, .analysis h3 { font-size: 13px; margin: 18px 0 6px; color: var(--accent); }
-.analysis strong { color: #fff; }
-.analysis code { font-family: var(--mono); font-size: 12.5px; color: #9ff6c9; background: rgba(0, 0, 0, 0.5); padding: 1px 5px; }
-.analysis pre { background: rgba(0, 0, 0, 0.5); padding: 8px; overflow: auto; }
