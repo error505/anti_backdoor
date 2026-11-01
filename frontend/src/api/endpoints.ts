@@ -1,7 +1,7 @@
-﻿import { downloadFile, http } from "./client";
+import { downloadFile, http } from "./client";
 import type {
   ActionResult, ActivityEvent, AiAnalysis, AiProvider, AiProviderOptions, AiScheduleConfig, AiScheduleState, AiSettings, CaptureRecord, CaptureStatus, Connection,
-  ContextPreview, DefenderOverview, GuardConfig, GuardMode, GuardStatus, IpIntelBatch, IpIntelSettings, DefenderScanType, Finding, FirewallRule, FlockionCheck, FlockionMode, FlockionResult,
+  ContextPreview, DefenderOverview, GuardConfig, GuardMode, GuardStatus, IpIntelBatch, MetricsHistory, IpIntelSettings, DefenderScanType, Finding, FirewallRule, FlockionCheck, FlockionMode, FlockionResult,
   FlockionSettings, IntelSettings, MalwareScanStatus, ScanScope, PersistenceEntry, ProcessDetail,
   ProcessInfo, QuarantineItem, ReportFormat, SourceHit, SystemStatus, TrafficSummary, UploadMethod,
 } from "./types";
@@ -130,4 +130,8 @@ export const guardApi = {
   acknowledge: (alertId: string | null) => http.post<ActionResult>("/api/guard/acknowledge", { alert_id: alertId }),
   resume: (alertId: string) => http.post<ActionResult>(`/api/guard/alerts/${alertId}/resume`),
   testAlarm: () => http.post<ActionResult>("/api/guard/test-alarm"),
+};
+
+export const metricsApi = {
+  history: () => http.get<MetricsHistory>("/api/metrics"),
 };

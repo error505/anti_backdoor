@@ -18,11 +18,12 @@ function AnimatedNumber({ value }: { value: number }) {
   return <>{useAnimatedNumber(value)}</>;
 }
 
-export function StatTile({ label, value, tone }: { label: string; value: ReactNode; tone?: "danger" | "warn" | "ok" }) {
+export function StatTile({ label, value, tone, spark }: { label: string; value: ReactNode; tone?: "danger" | "warn" | "ok"; spark?: ReactNode }) {
   return (
     <div className={`stat ${tone ? `stat-${tone}` : ""}`}>
       <div className="stat-value">{typeof value === "number" ? <AnimatedNumber value={value} /> : value}</div>
       <div className="stat-label">{label}</div>
+      {spark}
     </div>
   );
 }

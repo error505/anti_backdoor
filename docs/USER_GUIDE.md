@@ -42,6 +42,14 @@ the first visit follows your operating system's light or dark setting. A link ca
 
 ![Overview](screenshots/overview.png)
 
+Under the tiles are live charts (hover a line for exact values):
+
+- **Data leaving and entering this PC**: bytes per second over the last 30 minutes. A sudden bump in *Sent* with nothing
+  you started is what exfiltration looks like. Needs administrator rights to count bytes.
+- **Findings by severity**, **Internet connections over time**, **Top senders** (bars grow with data sent, a shimmer
+  marks programs sending right now) and **Activity, last 30 minutes** (events per minute, stacked by kind).
+- Each tile has a small trend line. History is kept in memory only, for 30 minutes, and restarts empty.
+
 The threat gauge reflects the worst finding (info never raises it). Tiles count findings, internet connections,
 ports reachable from the network, processes and autostart entries. Below: the most severe findings with action
 buttons, the programs that sent the most data, and an incident-response checklist (rotate credentials, move wallet

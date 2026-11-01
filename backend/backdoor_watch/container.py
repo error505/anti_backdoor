@@ -50,6 +50,7 @@ from backdoor_watch.ip_intel.ip_providers import IpWhoIsProvider
 from backdoor_watch.flockion.service import FlockionService
 from backdoor_watch.flockion.settings_store import FlockionSettingsStore
 from backdoor_watch.monitoring.event_log import EventLog
+from backdoor_watch.monitoring.metrics_recorder import SAMPLE_INTERVAL_SECONDS, MetricsRecorder
 from backdoor_watch.monitoring.periodic_job import PeriodicJob
 from backdoor_watch.monitoring.refreshers import (DefenderRefresher, FindingsRefresher,
                                                   PersistenceRefresher, SnapshotRefresher)
@@ -93,6 +94,7 @@ class AppServices:
     intel_settings: IntelSettingsStore
     ip_intel: IpIntelService
     guard: GuardService
+    metrics: MetricsRecorder
     jobs: list[PeriodicJob]
 
     def start(self) -> None:
@@ -185,10 +187,12 @@ def build_services(settings: Settings) -> AppServices:
     response = ResponseService(ProcessController(ProcessKillPolicy(rules.protected_processes)), vault, firewall,
                                PersistenceRemover(vault, settings.backup_dir), defender, state, events)
     guard = _guard(settings, rules, state, events, response, alerts)
+    metrics = MetricsRecorder(state, ledger)
     snapshot = SnapshotRefresher(ProcessCollector(signatures), ConnectionCollector(dns, meter), ledger, state, events,
                                  SelfIdentity(settings.install_root), guard.check)
     jobs = [
         PeriodicJob("snapshot", 2, snapshot.refresh),
+        PeriodicJob("metrics", SAMPLE_INTERVAL_SECONDS, metrics.sample),
         PeriodicJob("signatures", 3, signatures.verify_pending),
         PeriodicJob("dns-cache", 15, dns.refresh_from_system_cache),
         PeriodicJob("findings", 5, findings.refresh),
@@ -208,7 +212,7 @@ def build_services(settings: Settings) -> AppServices:
         findings_refresher=findings, reports=insights.reports, ai_settings=insights.ai_settings,
         ai_analysis=insights.ai_analysis, analysis_archive=insights.archive, ai_scheduler=insights.scheduler,
         flockion_settings=insights.flockion_settings, flockion=insights.flockion,
-        malware_scanner=malware_scanner, intel_settings=intel_settings, ip_intel=ip_intel, guard=guard, jobs=jobs,
+        malware_scanner=malware_scanner, intel_settings=intel_settings, ip_intel=ip_intel, guard=guard, metrics=metrics, jobs=jobs,
     )
     if settings.demo:
         seed_demo(services)

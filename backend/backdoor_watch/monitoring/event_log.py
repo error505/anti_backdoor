@@ -35,6 +35,14 @@ class EventLog:
         if lines:
             self._write(lines)
 
+    def restore(self, events: Iterable[ActivityEvent]) -> None:
+        """Loads events that already carry their own timestamps, without writing them to disk (demo mode)."""
+        with self._lock:
+            for event in sorted(events, key=lambda e: e.timestamp):
+                event.seq = self._next_seq
+                self._next_seq += 1
+                self._events.append(event)
+
     def since(self, seq: int, limit: int) -> list[ActivityEvent]:
         with self._lock:
             newer = [e for e in self._events if e.seq > seq]

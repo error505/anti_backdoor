@@ -422,3 +422,21 @@ export interface GuardStatus {
   unacknowledged: number;
   seen_programs: SeenProgram[];
 }
+
+export interface MetricSample {
+  t: number;
+  rate_out: number;
+  rate_in: number;
+  external_connections: number;
+  network_listeners: number;
+  processes: number;
+  critical: number;
+  high: number;
+  medium: number;
+}
+
+export interface MetricsHistory {
+  metering: boolean;
+  interval_seconds: number;
+  samples: MetricSample[];
+}

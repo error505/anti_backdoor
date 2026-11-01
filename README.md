@@ -47,6 +47,8 @@ connector can review the findings for you.
   runs when nothing changed so you do not burn tokens.
 - **Reports and integrations:** HTML/Markdown/JSON reports, upload to S3/Azure/GCS with a pre-signed URL or a
   webhook, and send a redacted snapshot to a Flockion agent.
+- **Live charts:** animated data in/out, internet connections, findings by severity, top senders and a 30-minute
+  activity timeline, plus a trend line in each stat tile.
 - **Four themes:** a **Sci-fi** or a plain **Admin** dashboard style, each in **Dark** or **Light**, switched in the
   top bar and remembered per browser.
 - **Demo mode:** `--demo` loads fictional data, so you can try everything without an infected machine.
@@ -56,7 +58,7 @@ connector can review the findings for you.
 | ![Findings](docs/screenshots/findings.png) | ![Connections](docs/screenshots/connections.png) |
 | ![AI analysis](docs/screenshots/ai.png) | ![Malware scan](docs/screenshots/malware.png) |
 | ![Install guard](docs/screenshots/guard.png) | ![Guard alarm banner](docs/screenshots/guard-alarm.png) |
-| ![Admin dark](docs/screenshots/theme-admin-dark.png) | ![Admin light](docs/screenshots/theme-admin-light.png) |
+| ![Charts, admin light](docs/screenshots/charts-admin-light.png) | ![Admin dark](docs/screenshots/theme-admin-dark.png) |
 
 More screens and a tab-by-tab tour are in the **[User guide](docs/USER_GUIDE.md)**. The screenshots use demo mode
 (fictional data, documentation-range IP addresses).
