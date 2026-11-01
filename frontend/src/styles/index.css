@@ -4,5 +4,7 @@
 @import "./components.css";
 @import "./analysis.css";
 @import "./guard.css";
+@import "./themes.css";
+@import "./admin.css";
 @import "./hud.css";
 @import "./effects.css";

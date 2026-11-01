@@ -1,0 +1,118 @@
+/* Four themes: style (sci-fi | admin) x mode (dark | light), chosen by data-style and data-mode on <html>.
+   Sci-fi dark is the default and lives in tokens.css. Every theme sets the full token list. */
+
+/* ---------- sci-fi, light ---------- */
+:root[data-style="scifi"][data-mode="light"] {
+  --bg: #e6f0f6;
+  --surface-solid: #ffffff;
+  --border: rgba(0, 110, 135, 0.24);
+  --border-strong: rgba(0, 110, 135, 0.55);
+  --text: #0c2433;
+  --muted: #4f6b7d;
+  --accent: #007f96;
+  --accent-rgb: 0, 127, 150;
+  --accent-2: #c2188f;
+  --accent-2-rgb: 194, 24, 143;
+  --ok: #0d8a54;
+  --info: #0a74b8;
+  --low: #566b7c;
+  --medium: #a06a00;
+  --high: #c24e00;
+  --critical: #d6243f;
+  --critical-rgb: 214, 36, 63;
+  --glow-sm: 0 0 6px rgba(0, 127, 150, 0.25);
+  --glow-md: 0 0 14px rgba(0, 127, 150, 0.18);
+  --panel-a: rgba(255, 255, 255, 0.9);
+  --panel-b: rgba(231, 243, 249, 0.92);
+  --chrome-a: rgba(255, 255, 255, 0.96);
+  --chrome-b: rgba(236, 246, 250, 0.9);
+  --deep: rgba(255, 255, 255, 0.75);
+  --sunken: rgba(0, 60, 90, 0.07);
+  --input-bg: rgba(255, 255, 255, 0.92);
+  --strong: #00212e;
+  --code-fg: #0b6b4a;
+  --on-accent: #ffffff;
+  --danger-text: #c01d38;
+  --shadow: rgba(20, 60, 90, 0.16);
+  --placeholder: #7f97a6;
+  --scanline: rgba(0, 40, 60, 0.05);
+  --vignette: rgba(150, 190, 210, 0.35);
+  color-scheme: light;
+}
+
+/* ---------- admin, dark ---------- */
+:root[data-style="admin"] {
+  --bg: #0f141b;
+  --surface-solid: #161d27;
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.28);
+  --text: #d7dee8;
+  --muted: #8b98a8;
+  --accent: #4c8dff;
+  --accent-rgb: 76, 141, 255;
+  --accent-2: #8b7bff;
+  --accent-2-rgb: 139, 123, 255;
+  --ok: #3ecf8e;
+  --info: #4fa8ff;
+  --low: #8b98a8;
+  --medium: #e7b416;
+  --high: #f08a3c;
+  --critical: #f05252;
+  --critical-rgb: 240, 82, 82;
+  --glow-sm: none;
+  --glow-md: none;
+  --radius: 8px;
+  --font-display: "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-ui: "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+  --panel-a: #161d27;
+  --panel-b: #161d27;
+  --chrome-a: #161d27;
+  --chrome-b: #161d27;
+  --deep: #1b2430;
+  --sunken: rgba(0, 0, 0, 0.25);
+  --input-bg: #0f141b;
+  --strong: #ffffff;
+  --code-fg: #7ee0b0;
+  --on-accent: #ffffff;
+  --danger-text: #ff9a9a;
+  --shadow: rgba(0, 0, 0, 0.35);
+  --placeholder: #5f6c7b;
+  --scanline: transparent;
+  --vignette: transparent;
+  color-scheme: dark;
+}
+
+/* ---------- admin, light ---------- */
+:root[data-style="admin"][data-mode="light"] {
+  --bg: #f3f5f9;
+  --surface-solid: #ffffff;
+  --border: rgba(15, 23, 42, 0.12);
+  --border-strong: rgba(15, 23, 42, 0.3);
+  --text: #1f2937;
+  --muted: #64748b;
+  --accent: #2563eb;
+  --accent-rgb: 37, 99, 235;
+  --accent-2: #7c3aed;
+  --accent-2-rgb: 124, 58, 237;
+  --ok: #15803d;
+  --info: #0369a1;
+  --low: #64748b;
+  --medium: #a16207;
+  --high: #c2410c;
+  --critical: #dc2626;
+  --critical-rgb: 220, 38, 38;
+  --panel-a: #ffffff;
+  --panel-b: #ffffff;
+  --chrome-a: #ffffff;
+  --chrome-b: #ffffff;
+  --deep: #f8fafc;
+  --sunken: rgba(15, 23, 42, 0.05);
+  --input-bg: #ffffff;
+  --strong: #0f172a;
+  --code-fg: #0f766e;
+  --danger-text: #b91c1c;
+  --shadow: rgba(15, 23, 42, 0.12);
+  --placeholder: #94a3b8;
+  color-scheme: light;
+}

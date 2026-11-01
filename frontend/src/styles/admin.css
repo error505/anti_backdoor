@@ -1,0 +1,70 @@
+/* The "admin" style: a plain dashboard look. Strips the sci-fi decoration; colours come from themes.css. */
+
+:root[data-style="admin"] .backdrop,
+:root[data-style="admin"] .boot,
+:root[data-style="admin"] .panel::before,
+:root[data-style="admin"] .panel::after,
+:root[data-style="admin"] .glitch::before,
+:root[data-style="admin"] .glitch::after,
+:root[data-style="admin"] .btn::before,
+:root[data-style="admin"] .stat::after,
+:root[data-style="admin"] .panel-header h2::before,
+:root[data-style="admin"] .analysis-body h2::before { display: none; }
+
+:root[data-style="admin"] * { text-shadow: none !important; }
+:root[data-style="admin"] .logo-mark { filter: none; }
+
+:root[data-style="admin"] h1,
+:root[data-style="admin"] h2,
+:root[data-style="admin"] h3 { text-transform: none; letter-spacing: 0; font-weight: 600; }
+:root[data-style="admin"] h1 { font-size: 18px; }
+:root[data-style="admin"] h2 { font-size: 15px; color: var(--strong); }
+:root[data-style="admin"] h3 { font-size: 13px; }
+:root[data-style="admin"] .brand-sub { letter-spacing: 0.02em; text-transform: none; font-family: var(--font-ui); font-size: 12px; opacity: 1; color: var(--muted); }
+
+/* panels */
+:root[data-style="admin"] .panel { box-shadow: 0 1px 3px var(--shadow); backdrop-filter: none; }
+:root[data-style="admin"] .panel:hover { border-color: var(--border); box-shadow: 0 1px 3px var(--shadow); }
+:root[data-style="admin"] .panel-header { background: none; }
+:root[data-style="admin"] .topbar { box-shadow: 0 1px 3px var(--shadow); backdrop-filter: none; }
+:root[data-style="admin"] .sidenav { backdrop-filter: none; background: var(--chrome-a); }
+
+/* buttons, chips, tiles */
+:root[data-style="admin"] .btn {
+  clip-path: none; border-radius: 6px; text-transform: none; letter-spacing: 0; font-weight: 600; font-size: 13px;
+  background: transparent;
+}
+:root[data-style="admin"] .btn:hover:not(:disabled) { box-shadow: none; }
+:root[data-style="admin"] .btn-danger:hover:not(:disabled) { color: #fff; }
+:root[data-style="admin"] .chip { clip-path: none; border-radius: 999px; }
+:root[data-style="admin"] .chip-label { letter-spacing: 0.04em; }
+:root[data-style="admin"] .stat { clip-path: none; border-radius: var(--radius); border-top-width: 3px; }
+:root[data-style="admin"] .stat-value { font-family: var(--font-ui); font-weight: 700; font-size: 28px; }
+:root[data-style="admin"] .stat-label,
+:root[data-style="admin"] .field,
+:root[data-style="admin"] .facts dt { letter-spacing: 0.02em; text-transform: none; font-size: 12.5px; }
+:root[data-style="admin"] .gauge { border-radius: var(--radius); }
+:root[data-style="admin"] .gauge-level { font-family: var(--font-ui); letter-spacing: 0.04em; }
+
+/* navigation and tables */
+:root[data-style="admin"] .tab { text-transform: none; letter-spacing: 0; font-weight: 600; font-size: 14px; border-radius: 6px; }
+:root[data-style="admin"] .tab.active { background: rgba(var(--accent-rgb), 0.12); color: var(--accent); }
+:root[data-style="admin"] .tab::before { box-shadow: none; }
+:root[data-style="admin"] .nav-heading { letter-spacing: 0.08em; color: var(--muted); font-family: var(--font-ui); font-size: 11px; }
+:root[data-style="admin"] th { font-family: var(--font-ui); font-size: 12px; letter-spacing: 0.02em; text-transform: none; color: var(--muted); }
+:root[data-style="admin"] .table-wrap { border-radius: var(--radius); }
+:root[data-style="admin"] .badge { border-radius: 999px; letter-spacing: 0.03em; padding: 1px 9px; }
+:root[data-style="admin"] .guard-alarm-title,
+:root[data-style="admin"] .verdict-title,
+:root[data-style="admin"] .subhead,
+:root[data-style="admin"] .analysis-body h1,
+:root[data-style="admin"] .analysis-body h2,
+:root[data-style="admin"] .analysis-body h3 { font-family: var(--font-ui); letter-spacing: 0.02em; text-transform: none; }
+:root[data-style="admin"] .guard-alarm-title { color: var(--critical); }
+:root[data-style="admin"] .finding,
+:root[data-style="admin"] .guard-card,
+:root[data-style="admin"] .verdict-hero { border-radius: var(--radius); }
+:root[data-style="admin"] .country-code { border-radius: 4px; }
+:root[data-style="admin"] .gauge-value { filter: none; }
+:root[data-style="admin"] .chip { font-family: var(--font-ui); font-size: 12.5px; }
+:root[data-style="admin"] .chip-label { font-size: 11px; }

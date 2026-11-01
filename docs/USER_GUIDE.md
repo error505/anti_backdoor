@@ -28,6 +28,16 @@ The monitor's own processes (the server, the window that ran `start.ps1`, its Po
 **Backdoor Watch** badge and are never reported as threats. Defender running in *passive mode* while another
 antivirus (for example McAfee) is active is normal and shown as INFO.
 
+## Themes
+
+Two **Style** buttons (**Sci-fi**, **Admin**) and two **Mode** buttons (**Dark**, **Light**) in the top bar give four looks.
+Admin is a plain dashboard without glow, scanlines, boot intro or angled corners. The choice is stored in your browser;
+the first visit follows your operating system's light or dark setting. A link can force one, e.g. `?theme=admin-light`.
+
+| Admin, dark | Admin, light | Sci-fi, light |
+| --- | --- | --- |
+| ![Admin dark](screenshots/theme-admin-dark.png) | ![Admin light](screenshots/theme-admin-light.png) | ![Sci-fi light](screenshots/theme-scifi-light.png) |
+
 ## Overview
 
 ![Overview](screenshots/overview.png)

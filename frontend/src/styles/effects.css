@@ -24,13 +24,13 @@
   animation: floor-scroll 4s linear infinite;
   opacity: 0.55;
 }
-.backdrop-scanlines { position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.28) 0 1px, transparent 1px 3px); opacity: 0.45; }
+.backdrop-scanlines { position: absolute; inset: 0; background: repeating-linear-gradient(0deg, var(--scanline) 0 1px, transparent 1px 3px); opacity: 0.45; }
 .backdrop-sweep {
   position: absolute; left: 0; right: 0; height: 120px; top: -120px;
   background: linear-gradient(180deg, transparent, rgba(var(--accent-rgb), 0.06), transparent);
   animation: sweep 9s linear infinite;
 }
-.backdrop-vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.7)); }
+.backdrop-vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 55%, var(--vignette)); }
 
 /* ---------- glitch title ---------- */
 .glitch { position: relative; }

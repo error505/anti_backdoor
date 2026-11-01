@@ -29,5 +29,22 @@
   --font-display: "Orbitron", "Segoe UI", sans-serif;
   --font-ui: "Rajdhani", "Segoe UI", system-ui, sans-serif;
   --mono: "Share Tech Mono", "Cascadia Code", Consolas, monospace;
+
+  /* surfaces and text that used to be hard-coded; themes.css overrides these per theme */
+  --panel-a: rgba(10, 28, 46, 0.78);
+  --panel-b: rgba(4, 12, 22, 0.82);
+  --chrome-a: rgba(3, 10, 20, 0.95);
+  --chrome-b: rgba(3, 10, 20, 0.7);
+  --deep: rgba(4, 12, 22, 0.75);
+  --sunken: rgba(0, 0, 0, 0.5);
+  --input-bg: rgba(2, 10, 18, 0.8);
+  --strong: #eaffff;
+  --code-fg: #9ff6c9;
+  --on-accent: #001018;
+  --danger-text: #ff8fa3;
+  --shadow: rgba(0, 0, 0, 0.45);
+  --placeholder: #4b6578;
+  --scanline: rgba(0, 0, 0, 0.28);
+  --vignette: rgba(0, 0, 0, 0.7);
   color-scheme: dark;
 }

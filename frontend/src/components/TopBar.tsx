@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { AiScheduleState, SystemStatus } from "../api/types";
 import { LogoMark } from "./LogoMark";
+import { ThemeSwitcher } from "./ThemeSwitcher";
 
 type ChipTone = "ok" | "warn" | "danger" | "neutral";
 
@@ -56,6 +57,7 @@ export function TopBar({ status, aiWatch, offline }: Props) {
           ? <StatusChip label="AI Watch" value={aiWatchLabel(aiWatch)} tone="ok" pulse />
           : <StatusChip label="AI Watch" value="OFF" tone="neutral" />)}
         <StatusChip label="T" value={now.toLocaleTimeString([], { hour12: false })} tone="neutral" />
+        <ThemeSwitcher />
       </div>
     </header>
   );
